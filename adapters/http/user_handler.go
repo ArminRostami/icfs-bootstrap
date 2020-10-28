@@ -8,6 +8,9 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+const AuthHeader = "Authorization"
+const BearerSchema = "Bearer"
+
 func (h *Handler) RegisterHandler(c *gin.Context) {
 	var user domain.User
 	if err := c.ShouldBindJSON(&user); err != nil {
@@ -33,5 +36,35 @@ func (h *Handler) LoginHandler(c *gin.Context) {
 		renderError(c, err)
 		return
 	}
-	c.Header("Authorization", fmt.Sprintf("Bearer %s", tok))
+	c.Header(AuthHeader, fmt.Sprintf("%s %s", BearerSchema, tok))
+}
+
+func (h *Handler) ValidateClaims(c *gin.Context) {
+	claims, exists := c.Get("claims")
+	if !exists {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "no claims"})
+	}
+	c.JSON(http.StatusOK, claims)
+
+	// authHeader := c.GetHeader(AuthHeader)
+	// tokenStr := authHeader[len(BearerSchema)+1:]
+	// claims, err := h.USV.ValidateAuth(tokenStr)
+	// if err != nil {
+	// 	c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+	// 	return
+	// }
+	// c.JSON(http.StatusOK, claims)
+}
+
+func (h *Handler) AuthorizeJWT() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		authHeader := c.GetHeader(AuthHeader)
+		tokenStr := authHeader[len(BearerSchema)+1:]
+		claims, err := h.USV.ValidateAuth(tokenStr)
+		if err != nil {
+			c.AbortWithStatus(http.StatusUnauthorized)
+		}
+		c.Set("claims", claims)
+		c.Next()
+	}
 }

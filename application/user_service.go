@@ -44,12 +44,30 @@ func (s *UserService) AuthenticateUser(username, password string) (string, *Erro
 	if match := checkPassword(password, user.Password); !match {
 		return "", &Error{http.StatusUnauthorized, errors.New("auth failed")}
 	}
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{"username": username})
+
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{"username": username, "id": user.ID})
 	tokenStr, err := token.SignedString([]byte(SigningKey))
 	if err != nil {
 		return "", &Error{http.StatusInternalServerError, errors.Wrap(err, "failed to sign jwt")}
 	}
+
 	return tokenStr, nil
+}
+
+func (s *UserService) ValidateAuth(tokenString string) (jwt.Claims, error) {
+	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, errors.Errorf("unexpected signing method: %v", token.Header["alg"])
+		}
+		return []byte(SigningKey), nil
+	})
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to parse token")
+	}
+	if !token.Valid {
+		return nil, errors.New("invalid token")
+	}
+	return token.Claims, nil
 }
 
 func hashPassword(password string) (string, error) {
@@ -61,6 +79,5 @@ func hashPassword(password string) (string, error) {
 }
 
 func checkPassword(input, hash string) bool {
-	err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(input))
-	return err == nil
+	return bcrypt.CompareHashAndPassword([]byte(hash), []byte(input)) == nil
 }
