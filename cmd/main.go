@@ -24,6 +24,6 @@ func run() error {
 
 func main() {
 	if err := run(); err != nil {
-		log.Fatal(err)
+		log.Fatalf("%+v", err)
 	}
 }

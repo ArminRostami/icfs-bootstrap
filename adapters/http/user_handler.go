@@ -1,6 +1,7 @@
 package http
 
 import (
+	"fmt"
 	"icfs_mongo/domain"
 	"net/http"
 
@@ -19,4 +20,18 @@ func (h *Handler) RegisterHandler(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"id": id})
+}
+
+func (h *Handler) LoginHandler(c *gin.Context) {
+	var user domain.User
+	if err := c.ShouldBindJSON(&user); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	tok, err := h.USV.AuthenticateUser(user.Username, user.Password)
+	if err != nil {
+		renderError(c, err)
+		return
+	}
+	c.Header("Authorization", fmt.Sprintf("Bearer %s", tok))
 }

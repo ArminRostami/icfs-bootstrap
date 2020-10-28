@@ -1,6 +1,19 @@
-POST http://127.0.0.1:8080/register
+@base = http://127.0.0.1:8080
+
+POST {{base}}/register
 
 {
     "username":"armin",
     "password":"rostami"
 }
+
+
+###
+# @name auth
+POST {{base}}/login
+
+{
+    "username":"armin",
+    "password":"rostam"
+}
+

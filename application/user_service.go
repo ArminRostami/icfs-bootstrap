@@ -5,12 +5,16 @@ import (
 	"icfs_mongo/domain"
 	"net/http"
 
+	"github.com/dgrijalva/jwt-go"
 	"github.com/pkg/errors"
 	"golang.org/x/crypto/bcrypt"
 )
 
+const SigningKey = "VhFJdNDsE9vheq6wTEFga7WhuR4TJ1E8JTPNFaH3e_o"
+
 type UserStore interface {
-	RegisterUser(user *domain.User) (string, error)
+	InsertUser(user *domain.User) (string, error)
+	GetUserWithName(username string) (*domain.User, error)
 }
 
 type UserService struct {
@@ -24,11 +28,28 @@ func (s *UserService) RegisterUser(user *domain.User) (string, *Error) {
 	}
 	user.Password = hash
 	user.Credit = 0
-	id, err := s.UST.RegisterUser(user)
+	id, err := s.UST.InsertUser(user)
 	if err != nil {
 		return "", &Error{http.StatusInternalServerError, errors.Wrap(err, "failed to register user")}
 	}
 	return id, nil
+}
+
+func (s *UserService) AuthenticateUser(username, password string) (string, *Error) {
+	user, err := s.UST.GetUserWithName(username)
+	if err != nil {
+		return "", &Error{http.StatusUnauthorized, errors.Wrap(err, "failed to get user from db")}
+	}
+
+	if match := checkPassword(password, user.Password); !match {
+		return "", &Error{http.StatusUnauthorized, errors.New("auth failed")}
+	}
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{"username": username})
+	tokenStr, err := token.SignedString([]byte(SigningKey))
+	if err != nil {
+		return "", &Error{http.StatusInternalServerError, errors.Wrap(err, "failed to sign jwt")}
+	}
+	return tokenStr, nil
 }
 
 func hashPassword(password string) (string, error) {
@@ -39,7 +60,7 @@ func hashPassword(password string) (string, error) {
 	return string(hash), nil
 }
 
-// func checkPassword(input, hash string) bool {
-// 	err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(input))
-// 	return err == nil
-// }
+func checkPassword(input, hash string) bool {
+	err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(input))
+	return err == nil
+}

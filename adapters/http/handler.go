@@ -22,6 +22,7 @@ func (h *Handler) Serve() error {
 
 func (h *Handler) SetupRoutes() {
 	h.ge.POST("/register", h.RegisterHandler)
+	h.ge.POST("/login", h.LoginHandler)
 }
 
 func renderError(c *gin.Context, appErr *app.Error) {
