@@ -40,3 +40,17 @@ func (mdb *mongoDB) FindOne(collection string, filter interface{}) *mongo.Single
 	defer cancel()
 	return mdb.db.Collection(collection).FindOne(ctx, filter)
 }
+
+func (mdb *mongoDB) DeleteOne(collection string, filter interface{}) error {
+	ctx, cancel := context.WithTimeout(context.Background(), Timeout*time.Second)
+	defer cancel()
+	_, err := mdb.db.Collection(collection).DeleteOne(ctx, filter)
+	return errors.Wrap(err, "failed to delete object")
+}
+
+func (mdb *mongoDB) UpdateOne(collection string, filter, update interface{}) error {
+	ctx, cancel := context.WithTimeout(context.Background(), Timeout*time.Second)
+	defer cancel()
+	_, err := mdb.db.Collection(collection).UpdateOne(ctx, filter, update)
+	return errors.Wrap(err, "failed to update object")
+}

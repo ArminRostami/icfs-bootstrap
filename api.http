@@ -20,3 +20,8 @@ POST {{base}}/login
 ###
 GET {{base}}/validate
 Authorization: {{auth.response.headers.Authorization}}
+
+
+###
+DELETE {{base}}/user
+Authorization: {{auth.response.headers.Authorization}}

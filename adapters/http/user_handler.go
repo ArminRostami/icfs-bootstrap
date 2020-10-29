@@ -25,6 +25,27 @@ func (h *Handler) RegisterHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"id": id})
 }
 
+func (h *Handler) DeleteHandler(c *gin.Context) {
+	id := c.GetString("id")
+	// if !exists {
+	// 	c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "no claims"})
+	// 	return
+	// }
+	// clmap, ok := claims.(app.CustomClaims)
+	// if !ok {
+	// 	c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "cannot cast claims to map"})
+	// 	return
+	// }
+	// fmt.Println(clmap.ID)
+
+	err := h.USV.DeleteUser(id)
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": "failed to delete user"})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"msg": "user deleted successfully"})
+}
+
 func (h *Handler) LoginHandler(c *gin.Context) {
 	var user domain.User
 	if err := c.ShouldBindJSON(&user); err != nil {
@@ -45,15 +66,6 @@ func (h *Handler) ValidateClaims(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "no claims"})
 	}
 	c.JSON(http.StatusOK, claims)
-
-	// authHeader := c.GetHeader(AuthHeader)
-	// tokenStr := authHeader[len(BearerSchema)+1:]
-	// claims, err := h.USV.ValidateAuth(tokenStr)
-	// if err != nil {
-	// 	c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-	// 	return
-	// }
-	// c.JSON(http.StatusOK, claims)
 }
 
 func (h *Handler) AuthorizeJWT() gin.HandlerFunc {
@@ -64,7 +76,7 @@ func (h *Handler) AuthorizeJWT() gin.HandlerFunc {
 		if err != nil {
 			c.AbortWithStatus(http.StatusUnauthorized)
 		}
-		c.Set("claims", claims)
+		c.Set("id", claims.ID)
 		c.Next()
 	}
 }
