@@ -83,6 +83,10 @@ func (s *UserService) DeleteUser(id string) error {
 	return s.UST.DeleteUser(id)
 }
 
+func (s *UserService) UpdateUser(id string, update interface{}) error {
+	return s.UST.UpdateUser(id, update)
+}
+
 func hashPassword(password string) (string, error) {
 	hash, err := bcrypt.GenerateFromPassword([]byte(password), 14)
 	if err != nil {

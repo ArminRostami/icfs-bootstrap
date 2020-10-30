@@ -7,7 +7,6 @@ POST {{base}}/register
     "password":"rostami"
 }
 
-
 ###
 # @name auth
 POST {{base}}/login
@@ -25,3 +24,11 @@ Authorization: {{auth.response.headers.Authorization}}
 ###
 DELETE {{base}}/user
 Authorization: {{auth.response.headers.Authorization}}
+
+###
+PUT {{base}}/user
+Authorization: {{auth.response.headers.Authorization}}
+
+{
+    "credit":10
+}

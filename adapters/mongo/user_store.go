@@ -5,7 +5,6 @@ import (
 
 	"github.com/pkg/errors"
 	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 const UsersColl = "users"
@@ -29,11 +28,7 @@ func (us *UserStore) GetUserWithName(username string) (*domain.User, error) {
 }
 
 func (us *UserStore) DeleteUser(id string) error {
-	objID, err := primitive.ObjectIDFromHex(id)
-	if err != nil {
-		return errors.Wrap(err, "invalid objectid string")
-	}
-	return us.MDB.DeleteOne(UsersColl, bson.M{"_id": objID})
+	return us.MDB.DeleteOne(UsersColl, bson.M{"_id": id})
 }
 
 func (us *UserStore) UpdateUser(id string, update interface{}) error {

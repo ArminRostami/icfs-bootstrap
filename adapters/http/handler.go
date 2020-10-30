@@ -25,6 +25,7 @@ func (h *Handler) SetupRoutes() {
 	h.ge.POST("/login", h.LoginHandler)
 	h.ge.GET("/validate", h.AuthorizeJWT(), h.ValidateClaims)
 	h.ge.DELETE("/user", h.AuthorizeJWT(), h.DeleteHandler)
+	h.ge.PUT("/user", h.AuthorizeJWT(), h.UpdateHandler)
 }
 
 func renderError(c *gin.Context, appErr *app.Error) {

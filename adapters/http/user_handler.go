@@ -4,8 +4,10 @@ import (
 	"fmt"
 	"icfs_mongo/domain"
 	"net/http"
+	"strings"
 
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 )
 
 const AuthHeader = "Authorization"
@@ -13,6 +15,8 @@ const BearerSchema = "Bearer"
 
 func (h *Handler) RegisterHandler(c *gin.Context) {
 	var user domain.User
+	uid := strings.Replace(uuid.New().String(), "-", "", -1)
+	user.ID = uid
 	if err := c.ShouldBindJSON(&user); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -27,16 +31,6 @@ func (h *Handler) RegisterHandler(c *gin.Context) {
 
 func (h *Handler) DeleteHandler(c *gin.Context) {
 	id := c.GetString("id")
-	// if !exists {
-	// 	c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "no claims"})
-	// 	return
-	// }
-	// clmap, ok := claims.(app.CustomClaims)
-	// if !ok {
-	// 	c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "cannot cast claims to map"})
-	// 	return
-	// }
-	// fmt.Println(clmap.ID)
 
 	err := h.USV.DeleteUser(id)
 	if err != nil {
@@ -58,14 +52,12 @@ func (h *Handler) LoginHandler(c *gin.Context) {
 		return
 	}
 	c.Header(AuthHeader, fmt.Sprintf("%s %s", BearerSchema, tok))
+	c.JSON(http.StatusOK, gin.H{"username": user.Username})
 }
 
 func (h *Handler) ValidateClaims(c *gin.Context) {
-	claims, exists := c.Get("claims")
-	if !exists {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "no claims"})
-	}
-	c.JSON(http.StatusOK, claims)
+	id := c.GetString("id")
+	c.JSON(http.StatusOK, id)
 }
 
 func (h *Handler) AuthorizeJWT() gin.HandlerFunc {
@@ -79,4 +71,19 @@ func (h *Handler) AuthorizeJWT() gin.HandlerFunc {
 		c.Set("id", claims.ID)
 		c.Next()
 	}
+}
+
+func (h *Handler) UpdateHandler(c *gin.Context) {
+	id := c.GetString("id")
+	var user domain.User
+	if err := c.ShouldBindJSON(&user); err != nil {
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	err := h.USV.UpdateUser(id, user)
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"msg": "user updated successfully"})
 }
