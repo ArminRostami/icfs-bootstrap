@@ -1,19 +1,45 @@
 package db
 
 import (
+	"context"
 	"icfs_mongo/domain"
+	"sync"
 	"time"
 
 	"github.com/pkg/errors"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
+const UsersColl = "users"
+
 type UserStore struct {
-	MCL *MongoCol
+	MCL  *MongoCol
+	once sync.Once
+}
+
+func NewUserStore(mdb *mongo.Database) *UserStore {
+	return &UserStore{MCL: &MongoCol{Col: mdb.Collection(UsersColl)}}
+}
+
+func (us *UserStore) CreateIndexes() {
+	idxs := []mongo.IndexModel{
+		{Keys: bson.M{"bio": "text"}},
+		{Keys: bson.M{"username": 1}, Options: options.Index().SetUnique(true)},
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	_, _ = us.MCL.Col.Indexes().CreateMany(ctx, idxs)
 }
 
 func (us *UserStore) InsertUser(u *domain.User) (string, error) {
-	return us.MCL.InsertOne(u)
+	id, err := us.MCL.InsertOne(u)
+	if err != nil {
+		return "", errors.Wrap(err, "failed to insert user")
+	}
+	us.once.Do(us.CreateIndexes)
+	return id, nil
 }
 
 func (us *UserStore) GetUserWithName(username string) (*domain.User, error) {

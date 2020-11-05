@@ -32,7 +32,10 @@ func (mcl *MongoCol) InsertOne(object interface{}) (string, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), Timeout*time.Second)
 	defer cancel()
 	res, err := mcl.Col.InsertOne(ctx, object)
-	return fmt.Sprintf("%v", res.InsertedID), errors.Wrap(err, "failed to insert user into mongoDB")
+	if err != nil {
+		return "", errors.Wrap(err, "failed to insert user into mongoDB")
+	}
+	return fmt.Sprintf("%v", res.InsertedID), nil
 }
 
 func (mcl *MongoCol) FindOne(filter interface{}) *mongo.SingleResult {
