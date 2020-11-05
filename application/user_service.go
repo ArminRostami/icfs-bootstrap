@@ -16,6 +16,7 @@ const SigningKey = "VhFJdNDsE9vheq6wTEFga7WhuR4TJ1E8JTPNFaH3e_o"
 type UserStore interface {
 	InsertUser(user *domain.User) (string, error)
 	GetUserWithName(username string) (*domain.User, error)
+	GetUserWithID(id string) (*domain.User, error)
 	DeleteUser(id string) error
 	UpdateUser(id string, updates map[string]interface{}) error
 }
@@ -79,6 +80,15 @@ func (s *UserService) ValidateAuth(tokenString string) (*CustomClaims, error) {
 		return nil, errors.New("invalid token")
 	}
 	return claims, nil
+}
+
+func (s *UserService) GetUserWithID(id string) (*domain.User, error) {
+	u, err := s.UST.GetUserWithID(id)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to get user from userstore")
+	}
+	u.Password = ""
+	return u, nil
 }
 
 func (s *UserService) DeleteUser(id string) error {

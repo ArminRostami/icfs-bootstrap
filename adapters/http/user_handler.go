@@ -54,9 +54,14 @@ func (h *Handler) LoginHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"username": user.Username})
 }
 
-func (h *Handler) ValidateClaims(c *gin.Context) {
+func (h *Handler) GetUserInfo(c *gin.Context) {
 	id := c.GetString("id")
-	c.JSON(http.StatusOK, id)
+	u, err := h.USV.GetUserWithID(id)
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, u)
 }
 
 func (h *Handler) AuthorizeJWT() gin.HandlerFunc {

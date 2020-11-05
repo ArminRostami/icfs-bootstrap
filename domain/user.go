@@ -4,7 +4,7 @@ package domain
 import "time"
 
 type User struct {
-	ID        string    `bson:"_id" json:"_id"`
+	ID        string    `bson:"_id" json:"id"`
 	Username  string    `bson:"username" json:"username"`
 	Password  string    `bson:"password" json:"password"`
 	Email     string    `bson:"email" json:"email"`

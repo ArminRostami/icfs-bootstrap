@@ -19,19 +19,19 @@ POST {{base}}/login
 }
 
 ###
-GET {{base}}/validate
+GET {{base}}/users
 Cookie: {{auth.response.headers.Set-Cookie}}
 
 
 ###
-DELETE {{base}}/user
+DELETE {{base}}/users
 Cookie: {{auth.response.headers.Set-Cookie}}
 
 
 ###
-PUT {{base}}/user
+PUT {{base}}/users
 Cookie: {{auth.response.headers.Set-Cookie}}
 
 {
-    "password":"123456"
+    "email":"rstrmin@ymail.com"
 }

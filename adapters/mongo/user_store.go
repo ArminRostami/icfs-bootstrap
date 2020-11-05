@@ -36,3 +36,13 @@ func (us *UserStore) UpdateUser(id string, updates map[string]interface{}) error
 	updates["updated_at"] = time.Now()
 	return us.MDB.UpdateOne(UsersColl, bson.M{"_id": id}, bson.M{"$set": updates})
 }
+
+func (us *UserStore) GetUserWithID(id string) (*domain.User, error) {
+	res := us.MDB.FindOne(UsersColl, bson.M{"_id": id})
+	var u domain.User
+	err := res.Decode(&u)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to decode result into user")
+	}
+	return &u, nil
+}

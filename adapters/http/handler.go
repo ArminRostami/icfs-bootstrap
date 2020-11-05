@@ -23,9 +23,9 @@ func (h *Handler) Serve() error {
 func (h *Handler) SetupRoutes() {
 	h.ge.POST("/register", h.RegisterHandler)
 	h.ge.POST("/login", h.LoginHandler)
-	h.ge.GET("/validate", h.AuthorizeJWT(), h.ValidateClaims)
-	h.ge.DELETE("/user", h.AuthorizeJWT(), h.DeleteHandler)
-	h.ge.PUT("/user", h.AuthorizeJWT(), h.UpdateHandler)
+	h.ge.GET("/users", h.AuthorizeJWT(), h.GetUserInfo)
+	h.ge.DELETE("/users", h.AuthorizeJWT(), h.DeleteHandler)
+	h.ge.PUT("/users", h.AuthorizeJWT(), h.UpdateHandler)
 }
 
 func renderError(c *gin.Context, appErr *app.Error) {
