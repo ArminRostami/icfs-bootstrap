@@ -44,6 +44,12 @@ func (mcl *MongoCol) FindOne(filter interface{}) *mongo.SingleResult {
 	return mcl.Col.FindOne(ctx, filter)
 }
 
+func (mcl *MongoCol) Find(filter interface{}) (*mongo.Cursor, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), Timeout*time.Second)
+	defer cancel()
+	return mcl.Col.Find(ctx, filter)
+}
+
 func (mcl *MongoCol) DeleteOne(filter interface{}) error {
 	ctx, cancel := context.WithTimeout(context.Background(), Timeout*time.Second)
 	defer cancel()

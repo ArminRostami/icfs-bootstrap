@@ -69,4 +69,20 @@ func (us *UserStore) GetUserWithID(id string) (*domain.User, error) {
 		return nil, errors.Wrap(err, "failed to decode result into user")
 	}
 	return &u, nil
+
+}
+
+func (us *UserStore) SearchInBio(term string) (*[]domain.User, error) {
+	cur, err := us.MCL.Find(bson.M{"$text": bson.M{"$search": term}})
+	if err != nil {
+		return nil, errors.Wrap(err, "no matches")
+	}
+	var results []domain.User
+	ctx, cancel := context.WithTimeout(context.Background(), Timeout*time.Second)
+	defer cancel()
+	err = cur.All(ctx, &results)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to decode search results")
+	}
+	return &results, nil
 }

@@ -26,6 +26,7 @@ func (h *Handler) SetupRoutes() {
 	h.ge.GET("/users", h.AuthorizeJWT(), h.GetUserInfo)
 	h.ge.DELETE("/users", h.AuthorizeJWT(), h.DeleteHandler)
 	h.ge.PUT("/users", h.AuthorizeJWT(), h.UpdateHandler)
+	h.ge.POST("/search", h.SearchHandler)
 }
 
 func renderError(c *gin.Context, appErr *app.Error) {

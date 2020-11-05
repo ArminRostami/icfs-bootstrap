@@ -3,10 +3,10 @@
 POST {{base}}/register
 
 {
-    "username":"armin",
+    "username":"ali",
     "password":"asdf",
-    "email":"rostamiarmin@gmail.com",
-    "bio":"Currently studying software engineering at zanjan university"
+    "email":"aliali@gmail.com",
+    "bio":"studying hardware engineering"
 }
 
 ###
@@ -37,4 +37,11 @@ Cookie: {{auth.response.headers.Set-Cookie}}
     "password":"1234",
     "credit":"10000",
     "_id":"aghsantas"
+}
+
+###
+POST {{base}}/search
+
+{
+    "term":"software"
 }
