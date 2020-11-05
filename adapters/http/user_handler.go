@@ -1,7 +1,6 @@
 package http
 
 import (
-	"fmt"
 	"icfs_mongo/domain"
 	"net/http"
 	"strings"
@@ -10,8 +9,8 @@ import (
 	"github.com/google/uuid"
 )
 
-const AuthHeader = "Authorization"
-const BearerSchema = "Bearer"
+const JWT = "jwt"
+const ID = "id"
 
 func (h *Handler) RegisterHandler(c *gin.Context) {
 	var user domain.User
@@ -51,7 +50,7 @@ func (h *Handler) LoginHandler(c *gin.Context) {
 		renderError(c, err)
 		return
 	}
-	c.Header(AuthHeader, fmt.Sprintf("%s %s", BearerSchema, tok))
+	c.SetCookie(JWT, tok, 24*3600, "/", "", true, false)
 	c.JSON(http.StatusOK, gin.H{"username": user.Username})
 }
 
@@ -62,19 +61,22 @@ func (h *Handler) ValidateClaims(c *gin.Context) {
 
 func (h *Handler) AuthorizeJWT() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		authHeader := c.GetHeader(AuthHeader)
-		tokenStr := authHeader[len(BearerSchema)+1:]
-		claims, err := h.USV.ValidateAuth(tokenStr)
+		jwt, err := c.Cookie(JWT)
+		if err != nil {
+			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
+			return
+		}
+		claims, err := h.USV.ValidateAuth(jwt)
 		if err != nil {
 			c.AbortWithStatus(http.StatusUnauthorized)
 		}
-		c.Set("id", claims.ID)
+		c.Set(ID, claims.ID)
 		c.Next()
 	}
 }
 
 func (h *Handler) UpdateHandler(c *gin.Context) {
-	id := c.GetString("id")
+	id := c.GetString(ID)
 	var user domain.User
 	if err := c.ShouldBindJSON(&user); err != nil {
 		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})

@@ -24,8 +24,7 @@ type UserService struct {
 }
 
 type CustomClaims struct {
-	Username string `json:"username"`
-	ID       string `json:"id"`
+	ID string `json:"id"`
 	jwt.StandardClaims
 }
 
@@ -52,7 +51,7 @@ func (s *UserService) AuthenticateUser(username, password string) (string, *Erro
 	if match := checkPassword(password, user.Password); !match {
 		return "", &Error{http.StatusUnauthorized, errors.New("auth failed")}
 	}
-	claims := CustomClaims{Username: username, ID: user.ID}
+	claims := CustomClaims{ID: user.ID}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	tokenStr, err := token.SignedString([]byte(SigningKey))
 	if err != nil {

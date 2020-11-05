@@ -18,16 +18,17 @@ POST {{base}}/login
 
 ###
 GET {{base}}/validate
-Authorization: {{auth.response.headers.Authorization}}
+Cookie: {{auth.response.headers.Set-Cookie}}
 
 
 ###
 DELETE {{base}}/user
-Authorization: {{auth.response.headers.Authorization}}
+Cookie: {{auth.response.headers.Set-Cookie}}
+
 
 ###
 PUT {{base}}/user
-Authorization: {{auth.response.headers.Authorization}}
+Cookie: {{auth.response.headers.Set-Cookie}}
 
 {
     "credit":10
