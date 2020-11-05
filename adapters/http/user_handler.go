@@ -77,15 +77,18 @@ func (h *Handler) AuthorizeJWT() gin.HandlerFunc {
 
 func (h *Handler) UpdateHandler(c *gin.Context) {
 	id := c.GetString(ID)
-	var user domain.User
-	if err := c.ShouldBindJSON(&user); err != nil {
+
+	var updates map[string]interface{}
+	if err := c.ShouldBindJSON(&updates); err != nil {
 		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	err := h.USV.UpdateUser(id, user)
+
+	err := h.USV.UpdateUser(id, updates)
 	if err != nil {
 		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
+
 	c.JSON(http.StatusOK, gin.H{"msg": "user updated successfully"})
 }

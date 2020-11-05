@@ -51,6 +51,6 @@ func (mdb *mongoDB) DeleteOne(collection string, filter interface{}) error {
 func (mdb *mongoDB) UpdateOne(collection string, filter, update interface{}) error {
 	ctx, cancel := context.WithTimeout(context.Background(), Timeout*time.Second)
 	defer cancel()
-	_, err := mdb.db.Collection(collection).ReplaceOne(ctx, filter, update)
+	_, err := mdb.db.Collection(collection).UpdateOne(ctx, filter, update)
 	return errors.Wrap(err, "failed to update object")
 }

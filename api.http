@@ -4,7 +4,9 @@ POST {{base}}/register
 
 {
     "username":"armin",
-    "password":"rostami"
+    "password":"rostami",
+    "email":"rostmiarmin@gmail.com",
+    "credit":10000
 }
 
 ###
@@ -31,5 +33,5 @@ PUT {{base}}/user
 Cookie: {{auth.response.headers.Set-Cookie}}
 
 {
-    "credit":10
+    "password":"123456"
 }

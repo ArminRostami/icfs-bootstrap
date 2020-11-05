@@ -4,6 +4,7 @@ package app
 import (
 	"icfs_mongo/domain"
 	"net/http"
+	"time"
 
 	"github.com/dgrijalva/jwt-go"
 	"github.com/pkg/errors"
@@ -16,7 +17,7 @@ type UserStore interface {
 	InsertUser(user *domain.User) (string, error)
 	GetUserWithName(username string) (*domain.User, error)
 	DeleteUser(id string) error
-	UpdateUser(id string, update interface{}) error
+	UpdateUser(id string, updates map[string]interface{}) error
 }
 
 type UserService struct {
@@ -35,6 +36,8 @@ func (s *UserService) RegisterUser(user *domain.User) (string, *Error) {
 	}
 	user.Password = hash
 	user.Credit = 0
+	user.CreatedAt = time.Now()
+	user.UpdatedAt = user.CreatedAt
 	id, err := s.UST.InsertUser(user)
 	if err != nil {
 		return "", &Error{http.StatusInternalServerError, errors.Wrap(err, "failed to register user")}
@@ -82,8 +85,8 @@ func (s *UserService) DeleteUser(id string) error {
 	return s.UST.DeleteUser(id)
 }
 
-func (s *UserService) UpdateUser(id string, update interface{}) error {
-	return s.UST.UpdateUser(id, update)
+func (s *UserService) UpdateUser(id string, updates map[string]interface{}) error {
+	return s.UST.UpdateUser(id, updates)
 }
 
 func hashPassword(password string) (string, error) {

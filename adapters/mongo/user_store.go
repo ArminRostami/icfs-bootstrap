@@ -2,6 +2,7 @@ package db
 
 import (
 	"icfs_mongo/domain"
+	"time"
 
 	"github.com/pkg/errors"
 	"go.mongodb.org/mongo-driver/bson"
@@ -31,6 +32,7 @@ func (us *UserStore) DeleteUser(id string) error {
 	return us.MDB.DeleteOne(UsersColl, bson.M{"_id": id})
 }
 
-func (us *UserStore) UpdateUser(id string, update interface{}) error {
-	return us.MDB.UpdateOne(UsersColl, bson.M{"_id": id}, update)
+func (us *UserStore) UpdateUser(id string, updates map[string]interface{}) error {
+	updates["updated_at"] = time.Now()
+	return us.MDB.UpdateOne(UsersColl, bson.M{"_id": id}, bson.M{"$set": updates})
 }
