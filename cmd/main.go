@@ -10,13 +10,15 @@ import (
 )
 
 const ConStr = "mongodb://root:example@localhost:27017"
+const UsersColl = "users"
 
 func run() error {
 	mdb, err := db.NewMongo(ConStr)
 	if err != nil {
 		return errors.Wrap(err, "failed to create mongo instance")
 	}
-	userStore := &db.UserStore{MDB: mdb}
+	userCollection := &db.MongoCol{Col: mdb.Collection(UsersColl)}
+	userStore := &db.UserStore{MCL: userCollection}
 	userService := &app.UserService{UST: userStore}
 	handler := http.Handler{USV: userService}
 	return handler.Serve()

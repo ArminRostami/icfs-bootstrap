@@ -14,43 +14,43 @@ import (
 const DBNAME = "icfs"
 const Timeout = 5
 
-type mongoDB struct {
-	db *mongo.Database
-}
-
-func NewMongo(conURI string) (*mongoDB, error) {
+func NewMongo(conURI string) (*mongo.Database, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), Timeout*time.Second)
 	defer cancel()
 	client, err := mongo.Connect(ctx, options.Client().ApplyURI(conURI))
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to connect to mongoDB instance")
 	}
-	return &mongoDB{db: client.Database(DBNAME)}, nil
+	return client.Database(DBNAME), nil
 }
 
-func (mdb *mongoDB) InsertOne(collection string, object interface{}) (string, error) {
+type MongoCol struct {
+	Col *mongo.Collection
+}
+
+func (mcl *MongoCol) InsertOne(object interface{}) (string, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), Timeout*time.Second)
 	defer cancel()
-	res, err := mdb.db.Collection(collection).InsertOne(ctx, object)
+	res, err := mcl.Col.InsertOne(ctx, object)
 	return fmt.Sprintf("%v", res.InsertedID), errors.Wrap(err, "failed to insert user into mongoDB")
 }
 
-func (mdb *mongoDB) FindOne(collection string, filter interface{}) *mongo.SingleResult {
+func (mcl *MongoCol) FindOne(filter interface{}) *mongo.SingleResult {
 	ctx, cancel := context.WithTimeout(context.Background(), Timeout*time.Second)
 	defer cancel()
-	return mdb.db.Collection(collection).FindOne(ctx, filter)
+	return mcl.Col.FindOne(ctx, filter)
 }
 
-func (mdb *mongoDB) DeleteOne(collection string, filter interface{}) error {
+func (mcl *MongoCol) DeleteOne(filter interface{}) error {
 	ctx, cancel := context.WithTimeout(context.Background(), Timeout*time.Second)
 	defer cancel()
-	_, err := mdb.db.Collection(collection).DeleteOne(ctx, filter)
+	_, err := mcl.Col.DeleteOne(ctx, filter)
 	return errors.Wrap(err, "failed to delete object")
 }
 
-func (mdb *mongoDB) UpdateOne(collection string, filter, update interface{}) error {
+func (mcl *MongoCol) UpdateOne(filter, update interface{}) error {
 	ctx, cancel := context.WithTimeout(context.Background(), Timeout*time.Second)
 	defer cancel()
-	_, err := mdb.db.Collection(collection).UpdateOne(ctx, filter, update)
+	_, err := mcl.Col.UpdateOne(ctx, filter, update)
 	return errors.Wrap(err, "failed to update object")
 }

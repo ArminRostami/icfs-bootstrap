@@ -8,18 +8,16 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 )
 
-const UsersColl = "users"
-
 type UserStore struct {
-	MDB *mongoDB
+	MCL *MongoCol
 }
 
 func (us *UserStore) InsertUser(u *domain.User) (string, error) {
-	return us.MDB.InsertOne(UsersColl, u)
+	return us.MCL.InsertOne(u)
 }
 
 func (us *UserStore) GetUserWithName(username string) (*domain.User, error) {
-	res := us.MDB.FindOne(UsersColl, bson.M{"username": username})
+	res := us.MCL.FindOne(bson.M{"username": username})
 	var u domain.User
 	err := res.Decode(&u)
 	if err != nil {
@@ -29,16 +27,16 @@ func (us *UserStore) GetUserWithName(username string) (*domain.User, error) {
 }
 
 func (us *UserStore) DeleteUser(id string) error {
-	return us.MDB.DeleteOne(UsersColl, bson.M{"_id": id})
+	return us.MCL.DeleteOne(bson.M{"_id": id})
 }
 
 func (us *UserStore) UpdateUser(id string, updates map[string]interface{}) error {
 	updates["updated_at"] = time.Now()
-	return us.MDB.UpdateOne(UsersColl, bson.M{"_id": id}, bson.M{"$set": updates})
+	return us.MCL.UpdateOne(bson.M{"_id": id}, bson.M{"$set": updates})
 }
 
 func (us *UserStore) GetUserWithID(id string) (*domain.User, error) {
-	res := us.MDB.FindOne(UsersColl, bson.M{"_id": id})
+	res := us.MCL.FindOne(bson.M{"_id": id})
 	var u domain.User
 	err := res.Decode(&u)
 	if err != nil {
