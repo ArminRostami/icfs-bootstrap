@@ -2,6 +2,7 @@
 package app
 
 import (
+	"fmt"
 	"icfs_mongo/domain"
 	"net/http"
 	"time"
@@ -96,6 +97,20 @@ func (s *UserService) DeleteUser(id string) error {
 }
 
 func (s *UserService) UpdateUser(id string, updates map[string]interface{}) error {
+	if pass, exists := updates["password"]; exists {
+		hashed, err := hashPassword(fmt.Sprint(pass))
+		if err != nil {
+			return errors.Wrap(err, "failed to hash password")
+		}
+		updates["password"] = hashed
+	}
+
+	validKeys := map[string]struct{}{"password": {}, "email": {}, "bio": {}}
+	for key := range updates {
+		if _, exists := validKeys[key]; !exists {
+			delete(updates, key)
+		}
+	}
 	return s.UST.UpdateUser(id, updates)
 }
 

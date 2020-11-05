@@ -4,9 +4,9 @@ POST {{base}}/register
 
 {
     "username":"armin",
-    "password":"rostami",
-    "email":"rostmiarmin@gmail.com",
-    "credit":10000
+    "password":"asdf",
+    "email":"rostamiarmin@gmail.com",
+    "bio":"Currently studying software engineering at zanjan university"
 }
 
 ###
@@ -15,7 +15,7 @@ POST {{base}}/login
 
 {
     "username":"armin",
-    "password":"rostami"
+    "password":"1234"
 }
 
 ###
@@ -33,5 +33,8 @@ PUT {{base}}/users
 Cookie: {{auth.response.headers.Set-Cookie}}
 
 {
-    "email":"rstrmin@ymail.com"
+    "email":"rostamiarmin@yahoo.com",
+    "password":"1234",
+    "credit":"10000",
+    "_id":"aghsantas"
 }
