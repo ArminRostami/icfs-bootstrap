@@ -2,7 +2,7 @@
 package http
 
 import (
-	app "icfs_mongo/application"
+	app "icfs_cr/application"
 
 	"github.com/gin-gonic/gin"
 	"github.com/pkg/errors"

@@ -3,11 +3,12 @@ package app
 
 import (
 	"fmt"
-	"icfs_mongo/domain"
+	"icfs_cr/domain"
 	"net/http"
 	"time"
 
 	"github.com/dgrijalva/jwt-go"
+	"github.com/google/uuid"
 	"github.com/pkg/errors"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -33,6 +34,7 @@ type CustomClaims struct {
 }
 
 func (s *UserService) RegisterUser(user *domain.User) (string, *Error) {
+	user.ID = uuid.New().String()
 	hash, err := hashPassword(user.Password)
 	if err != nil {
 		return "", &Error{http.StatusInternalServerError, err}

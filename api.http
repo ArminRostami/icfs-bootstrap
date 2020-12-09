@@ -3,7 +3,7 @@
 POST {{base}}/register
 
 {
-    "username":"ali",
+    "username":"armin",
     "password":"asdf",
     "email":"aliali@gmail.com",
     "bio":"studying hardware engineering"

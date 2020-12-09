@@ -1,12 +1,10 @@
 package http
 
 import (
-	"icfs_mongo/domain"
+	"icfs_cr/domain"
 	"net/http"
-	"strings"
 
 	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
 )
 
 const JWT = "jwt"
@@ -14,8 +12,6 @@ const ID = "id"
 
 func (h *Handler) RegisterHandler(c *gin.Context) {
 	var user domain.User
-	uid := strings.Replace(uuid.New().String(), "-", "", -1)
-	user.ID = uid
 	if err := c.ShouldBindJSON(&user); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return

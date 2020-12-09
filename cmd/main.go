@@ -1,22 +1,22 @@
 package main
 
 import (
-	http "icfs_mongo/adapters/http"
-	db "icfs_mongo/adapters/mongo"
-	app "icfs_mongo/application"
+	db "icfs_cr/adapters/cockroach"
+	http "icfs_cr/adapters/http"
+	app "icfs_cr/application"
 	"log"
 
 	"github.com/pkg/errors"
 )
 
-const ConStr = "mongodb://root:example@localhost:27017"
+const conStr = "postgres://root:admin@127.0.0.1:34851?sslmode=require"
 
 func run() error {
-	mdb, err := db.NewMongo(ConStr)
+	crdb, err := db.New(conStr)
 	if err != nil {
 		return errors.Wrap(err, "failed to create mongo instance")
 	}
-	userStore := db.NewUserStore(mdb)
+	userStore := &db.UserStore{CR: crdb}
 	userService := &app.UserService{UST: userStore}
 	handler := http.Handler{USV: userService}
 	return handler.Serve()
