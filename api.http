@@ -15,7 +15,7 @@ POST {{base}}/login
 
 {
     "username":"armin",
-    "password":"asdf"
+    "password":"1234"
 }
 
 ###
@@ -35,8 +35,7 @@ Cookie: {{auth.response.headers.Set-Cookie}}
 {
     "email":"rostamiarmin@yahoo.com",
     "password":"1234",
-    "credit":"10000",
-    "_id":"aghsantas"
+    "credit":"10000"
 }
 
 ###

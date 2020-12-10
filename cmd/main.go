@@ -9,7 +9,7 @@ import (
 	"github.com/pkg/errors"
 )
 
-const conStr = "postgres://root:admin@127.0.0.1:34851?sslmode=require"
+const conStr = "postgres://root:admin@127.0.0.1:34615?sslmode=require"
 
 func run() error {
 	crdb, err := db.New(conStr)
