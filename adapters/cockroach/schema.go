@@ -12,4 +12,16 @@ CREATE TABLE IF NOT EXISTS users(
 	created_at TIMESTAMP,
 	updated_at TIMESTAMP
 );
+
+CREATE TABLE IF NOT EXISTS contents(
+	cid STRING PRIMARY KEY UNIQUE,
+	uploader_id UUID REFERENCES users(id),
+	name STRING,
+	description STRING,
+	filename STRING,
+	extension STRING,
+	category STRING,
+	size FLOAT,
+	downloads INT
+);
 `

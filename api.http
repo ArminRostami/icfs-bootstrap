@@ -15,7 +15,7 @@ POST {{base}}/login
 
 {
     "username":"armin",
-    "password":"1234"
+    "password":"asdf"
 }
 
 ###
@@ -43,4 +43,17 @@ POST {{base}}/search
 
 {
     "term":"software"
+}
+
+###
+POST {{base}}/content 
+Cookie: {{auth.response.headers.Set-Cookie}}
+
+{
+    "cid":"a2s3d4f5a6s7d8f",
+    "name":"casino royale",
+    "description":"james bonds' casino royale movie",
+    "filename":"casino royale bluray 720p",
+    "extension":"mkv",
+    "size":2048.69
 }

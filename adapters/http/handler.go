@@ -11,6 +11,7 @@ import (
 type Handler struct {
 	ge  *gin.Engine
 	USV *app.UserService
+	CS  *app.ContentService
 }
 
 func (h *Handler) Serve() error {
@@ -27,6 +28,8 @@ func (h *Handler) SetupRoutes() {
 	h.ge.DELETE("/users", h.AuthorizeJWT(), h.DeleteHandler)
 	h.ge.PUT("/users", h.AuthorizeJWT(), h.UpdateHandler)
 	h.ge.POST("/search", h.SearchHandler)
+
+	h.ge.POST("/content", h.AuthorizeJWT(), h.NewContentHandler)
 }
 
 func renderError(c *gin.Context, appErr *app.Error) {
