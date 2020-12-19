@@ -50,10 +50,18 @@ POST {{base}}/content
 Cookie: {{auth.response.headers.Set-Cookie}}
 
 {
-    "cid":"a2s3d4f5a6s7d8f",
+    "cid":"a2s3d4fsadsf5a6s7d8f",
     "name":"casino royale",
     "description":"james bonds' casino royale movie",
     "filename":"casino royale bluray 720p",
     "extension":"mkv",
     "size":2048.69
+}
+
+###
+POST {{base}}/download
+Cookie: {{auth.response.headers.Set-Cookie}}
+
+{
+    "id":"8a637858-b5c3-4951-9c56-e826ecbf2116"
 }

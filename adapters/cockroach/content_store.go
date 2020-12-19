@@ -22,3 +22,12 @@ func (cs *ContentStore) AddContent(c *domain.Content) error {
 	}
 	return nil
 }
+
+func (cs *ContentStore) GetCid(id string) (string, error) {
+	var cid string
+	err := cs.CR.db.Get(&cid, `SELECT cid FROM contents WHERE id=$1`, id)
+	if err != nil {
+		return "", errors.Wrap(err, "failed to get id")
+	}
+	return cid, nil
+}

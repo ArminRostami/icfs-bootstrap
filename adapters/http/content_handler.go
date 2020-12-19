@@ -21,3 +21,19 @@ func (h *Handler) NewContentHandler(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, gin.H{"cid": content.CID})
 }
+
+func (h *Handler) GetContentHandler(c *gin.Context) {
+	input := struct {
+		ID string `json:"id"`
+	}{}
+	if err := c.ShouldBindJSON(&input); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	cid, err := h.CS.GetContentWithID(input.ID)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"cid": cid})
+}

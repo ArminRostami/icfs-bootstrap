@@ -11,6 +11,7 @@ import (
 
 type ContentStore interface {
 	AddContent(c *domain.Content) error
+	GetCid(id string) (string, error)
 }
 
 type ContentService struct {
@@ -26,5 +27,21 @@ func (s *ContentService) RegisterContent(c *domain.Content) *Error {
 	if err != nil {
 		return &Error{Status: http.StatusInternalServerError, Err: err}
 	}
+	err = s.UST.ModifyCredit(c.UploaderID, int(c.Size))
+	if err != nil {
+		return &Error{Status: http.StatusInternalServerError, Err: err}
+	}
 	return nil
 }
+
+func (s *ContentService) GetContentWithID(id string) (string, error) {
+	// check if user has required credit
+	// add to uploader and subtract from downloader
+	return s.CST.GetCid(id)
+}
+
+// add update function
+
+// add delete function: subtract credit from uploader
+
+// add content discovery functions

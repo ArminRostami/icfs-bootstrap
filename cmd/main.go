@@ -9,7 +9,7 @@ import (
 	"github.com/pkg/errors"
 )
 
-const conStr = "postgres://root:admin@127.0.0.1:44275?sslmode=require"
+const conStr = "postgres://root:admin@127.0.0.1:35595?sslmode=require"
 
 func run() error {
 	crdb, err := db.New(conStr)
@@ -18,7 +18,7 @@ func run() error {
 	}
 	userStore := &db.UserStore{CR: crdb}
 	contentStore := &db.ContentStore{CR: crdb}
-	contentService := &app.ContentService{CST: contentStore}
+	contentService := &app.ContentService{CST: contentStore, UST: userStore}
 	userService := &app.UserService{UST: userStore}
 	handler := http.Handler{USV: userService, CS: contentService}
 	return handler.Serve()

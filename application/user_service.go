@@ -21,6 +21,7 @@ type UserStore interface {
 	GetUserWithID(id string) (*domain.User, error)
 	DeleteUser(id string) error
 	UpdateUser(id string, updates map[string]interface{}) error
+	ModifyCredit(uid string, value int) error
 	SearchInBio(term string) (*[]domain.User, error)
 }
 

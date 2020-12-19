@@ -30,6 +30,7 @@ func (h *Handler) SetupRoutes() {
 	h.ge.POST("/search", h.SearchHandler)
 
 	h.ge.POST("/content", h.AuthorizeJWT(), h.NewContentHandler)
+	h.ge.POST("/download", h.AuthorizeJWT(), h.GetContentHandler)
 }
 
 func renderError(c *gin.Context, appErr *app.Error) {
