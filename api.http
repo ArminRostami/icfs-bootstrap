@@ -63,7 +63,7 @@ POST {{base}}/download
 Cookie: {{auth.response.headers.Set-Cookie}}
 
 {
-    "id":"5ae6f1de-2f58-43de-9d10-e4e523686a36"
+    "id":"f5a23044-d3e4-4222-b39b-dffd2925482c"
 }
 
 ###
@@ -72,4 +72,15 @@ Cookie: {{auth.response.headers.Set-Cookie}}
 
 {
     "id":"182c3b56-d232-4a2b-8ee8-dacde996ef93"
+}
+
+###
+PUT {{base}}/content
+Cookie: {{auth.response.headers.Set-Cookie}}
+
+{
+    "id":"f5a23044-d3e4-4222-b39b-dffd2925482c",
+    "name":"casino royal",
+    "description":"james bonds' movie",
+    "size":3000
 }

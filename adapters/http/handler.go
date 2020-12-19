@@ -32,6 +32,7 @@ func (h *Handler) SetupRoutes() {
 	h.ge.POST("/content", h.AuthorizeJWT(), h.NewContentHandler)
 	h.ge.POST("/download", h.AuthorizeJWT(), h.GetContentHandler)
 	h.ge.DELETE("/content", h.AuthorizeJWT(), h.DeleteContentHandler)
+	h.ge.PUT("/content", h.AuthorizeJWT(), h.ContentUpdateHandler)
 }
 
 func renderError(c *gin.Context, appErr *app.Error) {

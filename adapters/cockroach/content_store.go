@@ -46,3 +46,17 @@ func (cs *ContentStore) DeleteContent(id string) error {
 	}
 	return nil
 }
+
+func (cs *ContentStore) UpdateContent(id string, updates map[string]interface{}) error {
+	for key, val := range updates {
+		q := fmt.Sprintf(`UPDATE %s SET %s = $1 WHERE id = $2;`, contentsTable, key)
+		rows, err := cs.CR.Exec(q, val, id)
+		if err != nil {
+			return errors.Wrap(err, "failed to update content")
+		}
+		if rows < 1 {
+			return errors.New("operation complete but no row was affected")
+		}
+	}
+	return nil
+}
