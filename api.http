@@ -46,11 +46,12 @@ POST {{base}}/search
 }
 
 ###
+# @name addContent
 POST {{base}}/content 
 Cookie: {{auth.response.headers.Set-Cookie}}
 
 {
-    "cid":"a2s3d4fsadsf5a6s7d8f",
+    "cid":"a2s3d4fsadsf5a6s7d8fasds",
     "name":"casino royale",
     "description":"james bonds' casino royale movie",
     "filename":"casino royale bluray 720p",
@@ -63,7 +64,7 @@ POST {{base}}/download
 Cookie: {{auth.response.headers.Set-Cookie}}
 
 {
-    "id":"f5a23044-d3e4-4222-b39b-dffd2925482c"
+    "id":"{{addContent.response.body.id}}"
 }
 
 ###
@@ -71,7 +72,7 @@ DELETE {{base}}/content
 Cookie: {{auth.response.headers.Set-Cookie}}
 
 {
-    "id":"182c3b56-d232-4a2b-8ee8-dacde996ef93"
+        "id":"{{addContent.response.body.id}}"
 }
 
 ###
@@ -79,7 +80,7 @@ PUT {{base}}/content
 Cookie: {{auth.response.headers.Set-Cookie}}
 
 {
-    "id":"f5a23044-d3e4-4222-b39b-dffd2925482c",
+    "id":"{{addContent.response.body.id}}",
     "name":"casino royal",
     "description":"james bonds' movie",
     "size":3000

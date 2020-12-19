@@ -48,6 +48,10 @@ func (s *ContentService) GetContentWithID(uid, id string) (*domain.Content, erro
 		return nil, errors.Wrap(err, "failed to get content info")
 	}
 
+	if downloader.ID == content.UploaderID {
+		return nil, errors.New("the uploader cannot download their own file")
+	}
+
 	if int(content.Size) > downloader.Credit {
 		return nil, errors.Wrap(err, "user does not have enough credit")
 	}
@@ -108,5 +112,4 @@ func (s *ContentService) UpdateContent(uid string, updates map[string]interface{
 
 }
 
-// add update function
 // add content discovery functions

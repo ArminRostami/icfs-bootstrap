@@ -24,7 +24,7 @@ func (h *Handler) RegisterHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"id": id})
 }
 
-func (h *Handler) DeleteHandler(c *gin.Context) {
+func (h *Handler) DeleteUserHandler(c *gin.Context) {
 	id := c.GetString("id")
 
 	err := h.USV.DeleteUser(id)
@@ -76,7 +76,7 @@ func (h *Handler) AuthorizeJWT() gin.HandlerFunc {
 	}
 }
 
-func (h *Handler) UpdateHandler(c *gin.Context) {
+func (h *Handler) UserUpdateHandler(c *gin.Context) {
 	id := c.GetString(ID)
 
 	var updates map[string]interface{}

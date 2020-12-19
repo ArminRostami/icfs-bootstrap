@@ -25,8 +25,8 @@ func (h *Handler) SetupRoutes() {
 	h.ge.POST("/register", h.RegisterHandler)
 	h.ge.POST("/login", h.LoginHandler)
 	h.ge.GET("/users", h.AuthorizeJWT(), h.GetUserInfo)
-	h.ge.DELETE("/users", h.AuthorizeJWT(), h.DeleteHandler)
-	h.ge.PUT("/users", h.AuthorizeJWT(), h.UpdateHandler)
+	h.ge.DELETE("/users", h.AuthorizeJWT(), h.DeleteUserHandler)
+	h.ge.PUT("/users", h.AuthorizeJWT(), h.UserUpdateHandler)
 	h.ge.POST("/search", h.SearchHandler)
 
 	h.ge.POST("/content", h.AuthorizeJWT(), h.NewContentHandler)
