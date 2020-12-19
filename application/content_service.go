@@ -5,6 +5,8 @@ import (
 	"icfs_cr/domain"
 	"mime"
 	"net/http"
+
+	"github.com/google/uuid"
 )
 
 type ContentStore interface {
@@ -17,6 +19,7 @@ type ContentService struct {
 }
 
 func (s *ContentService) RegisterContent(c *domain.Content) *Error {
+	c.ID = uuid.New().String()
 	c.Downloads = 0
 	c.Category = mime.TypeByExtension(fmt.Sprintf(".%s", c.Extension))
 	err := s.CST.AddContent(c)

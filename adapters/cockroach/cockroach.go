@@ -14,7 +14,7 @@ type CRDB struct {
 func New(conStr string) (*CRDB, error) {
 	dbx, err := sqlx.Connect("pgx", conStr)
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to connect ot db")
+		return nil, errors.Wrap(err, "failed to connect to db")
 	}
 	_, err = dbx.Exec(schema)
 	if err != nil {

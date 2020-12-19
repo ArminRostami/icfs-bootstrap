@@ -1,6 +1,7 @@
 package domain
 
 type Content struct {
+	ID          string  `json:"id" db:"id"`
 	CID         string  `json:"cid" db:"cid"`
 	Name        string  `json:"name" db:"name"`
 	Description string  `json:"description" db:"description"`

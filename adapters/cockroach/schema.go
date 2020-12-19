@@ -14,7 +14,8 @@ CREATE TABLE IF NOT EXISTS users(
 );
 
 CREATE TABLE IF NOT EXISTS contents(
-	cid STRING PRIMARY KEY UNIQUE,
+	id UUID PRIMARY KEY,
+	cid STRING UNIQUE,
 	uploader_id UUID REFERENCES users(id),
 	name STRING,
 	description STRING,

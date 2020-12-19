@@ -12,8 +12,8 @@ type ContentStore struct {
 
 func (cs *ContentStore) AddContent(c *domain.Content) error {
 	rows, err := cs.CR.NamedExec(`
-	INSERT INTO contents(cid,name,description,filename,extension,category,uploader_id,size,downloads) 
-	VALUES(:cid,:name,:description,:filename,:extension,:category,:uploader_id,:size,:downloads) `, c)
+	INSERT INTO contents(id,cid,name,description,filename,extension,category,uploader_id,size,downloads) 
+	VALUES(:id,:cid,:name,:description,:filename,:extension,:category,:uploader_id,:size,:downloads) `, c)
 	if err != nil {
 		return errors.Wrap(err, "failed to add content")
 	}
