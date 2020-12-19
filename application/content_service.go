@@ -21,29 +21,51 @@ type ContentService struct {
 	UST UserStore
 }
 
-func (s *ContentService) RegisterContent(c *domain.Content) *Error {
+func (s *ContentService) RegisterContent(c *domain.Content) (string, *Error) {
 	c.ID = uuid.New().String()
 	c.Downloads = 0
 	c.Category = mime.TypeByExtension(fmt.Sprintf(".%s", c.Extension))
 	err := s.CST.AddContent(c)
 	if err != nil {
-		return &Error{Status: http.StatusInternalServerError, Err: err}
+		return "", &Error{Status: http.StatusInternalServerError, Err: err}
 	}
 	err = s.UST.ModifyCredit(c.UploaderID, int(c.Size))
 	if err != nil {
-		return &Error{Status: http.StatusInternalServerError, Err: err}
+		return "", &Error{Status: http.StatusInternalServerError, Err: err}
 	}
-	return nil
+	return c.ID, nil
 }
 
-func (s *ContentService) GetContentWithID(id string) (*domain.Content, error) {
-	// check if user has required credit
-	// add to uploader and subtract from downloader
+func (s *ContentService) GetContentWithID(uid, id string) (*domain.Content, error) {
+	downloader, err := s.UST.GetUserWithID(uid)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to get user info")
+	}
+
+	content, err := s.CST.GetContent(id)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to get content info")
+	}
+
+	if int(content.Size) > downloader.Credit {
+		return nil, errors.Wrap(err, "user does not have enough credit")
+	}
+
+	err = s.UST.ModifyCredit(content.UploaderID, int(content.Size))
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to add credit to uploader")
+	}
+
+	err = s.UST.ModifyCredit(uid, -int(content.Size))
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to subtract credit from downloader")
+	}
+
 	return s.CST.GetContent(id)
 }
 
 func (s *ContentService) DeleteContent(uid, id string) error {
-	c, err := s.GetContentWithID(id)
+	c, err := s.CST.GetContent(id)
 	if err != nil {
 		return errors.Wrap(err, "failed to get content id")
 	}

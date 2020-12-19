@@ -14,12 +14,12 @@ func (h *Handler) NewContentHandler(c *gin.Context) {
 		return
 	}
 	content.UploaderID = c.GetString("id")
-	appErr := h.CS.RegisterContent(&content)
+	id, appErr := h.CS.RegisterContent(&content)
 	if appErr != nil {
 		renderError(c, appErr)
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"cid": content.CID})
+	c.JSON(http.StatusOK, gin.H{"id": id})
 }
 
 func (h *Handler) GetContentHandler(c *gin.Context) {
@@ -30,7 +30,8 @@ func (h *Handler) GetContentHandler(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	content, err := h.CS.GetContentWithID(input.ID)
+	uid := c.GetString("id")
+	content, err := h.CS.GetContentWithID(uid, input.ID)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return

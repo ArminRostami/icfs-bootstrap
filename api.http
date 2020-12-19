@@ -63,7 +63,7 @@ POST {{base}}/download
 Cookie: {{auth.response.headers.Set-Cookie}}
 
 {
-    "id":"e2e61612-1289-4c76-8dbf-84c1ff086335"
+    "id":"5ae6f1de-2f58-43de-9d10-e4e523686a36"
 }
 
 ###
@@ -71,5 +71,5 @@ DELETE {{base}}/content
 Cookie: {{auth.response.headers.Set-Cookie}}
 
 {
-    "id":"e2e61612-1289-4c76-8dbf-84c1ff086335"
+    "id":"182c3b56-d232-4a2b-8ee8-dacde996ef93"
 }
