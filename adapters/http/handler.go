@@ -22,17 +22,19 @@ func (h *Handler) Serve() error {
 }
 
 func (h *Handler) SetupRoutes() {
-	h.ge.POST("/register", h.RegisterHandler)
-	h.ge.POST("/login", h.LoginHandler)
+	h.ge.POST("/users", h.RegisterHandler)
 	h.ge.GET("/users", h.AuthorizeJWT(), h.GetUserInfo)
-	h.ge.DELETE("/users", h.AuthorizeJWT(), h.DeleteUserHandler)
 	h.ge.PUT("/users", h.AuthorizeJWT(), h.UserUpdateHandler)
-	h.ge.POST("/search", h.SearchHandler)
+	h.ge.DELETE("/users", h.AuthorizeJWT(), h.DeleteUserHandler)
 
-	h.ge.POST("/content", h.AuthorizeJWT(), h.NewContentHandler)
-	h.ge.POST("/download", h.AuthorizeJWT(), h.GetContentHandler)
-	h.ge.DELETE("/content", h.AuthorizeJWT(), h.DeleteContentHandler)
-	h.ge.PUT("/content", h.AuthorizeJWT(), h.ContentUpdateHandler)
+	h.ge.POST("/login", h.LoginHandler)
+
+	h.ge.POST("/contents", h.AuthorizeJWT(), h.NewContentHandler)
+	h.ge.GET("/contents", h.AuthorizeJWT(), h.GetContentHandler)
+	h.ge.PUT("/contents", h.AuthorizeJWT(), h.ContentUpdateHandler)
+	h.ge.DELETE("/contents", h.AuthorizeJWT(), h.DeleteContentHandler)
+
+	h.ge.POST("/search", h.SearchHandler)
 }
 
 func renderError(c *gin.Context, appErr *app.Error) {

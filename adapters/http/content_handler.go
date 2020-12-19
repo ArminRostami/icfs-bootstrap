@@ -23,15 +23,9 @@ func (h *Handler) NewContentHandler(c *gin.Context) {
 }
 
 func (h *Handler) GetContentHandler(c *gin.Context) {
-	input := struct {
-		ID string `json:"id"`
-	}{}
-	if err := c.ShouldBindJSON(&input); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
+	id := c.Query("id")
 	uid := c.GetString("id")
-	content, err := h.CS.GetContentWithID(uid, input.ID)
+	content, err := h.CS.GetContentWithID(uid, id)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -73,4 +67,23 @@ func (h *Handler) ContentUpdateHandler(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{"msg": "content updated successfully"})
+}
+
+func (h *Handler) SearchHandler(c *gin.Context) {
+	panic("not implemented")
+	// var search map[string]string
+	// if err := c.ShouldBindJSON(&search); err != nil {
+	// 	c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+	// 	return
+	// }
+	// if _, exists := search["term"]; !exists {
+	// 	c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": `key "term" does not exist`})
+	// 	return
+	// }
+	// results, err := h.USV.SearchInBio(search["term"])
+	// if err != nil {
+	// 	c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+	// 	return
+	// }
+	// c.JSON(http.StatusOK, results)
 }

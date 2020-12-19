@@ -64,10 +64,6 @@ func (us *UserStore) UpdateUser(id string, updates map[string]interface{}) error
 	return nil
 }
 
-func (us *UserStore) SearchInBio(term string) (*[]domain.User, error) {
-	panic("not implemented") // TODO: Implement
-}
-
 func (us *UserStore) ModifyCredit(uid string, value int) error {
 	q := fmt.Sprintf(`UPDATE %s SET credit = credit + $1 WHERE id=$2`, usersTable)
 	rows, err := us.CR.Exec(q, value, uid)

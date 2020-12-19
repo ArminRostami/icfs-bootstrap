@@ -22,7 +22,6 @@ type UserStore interface {
 	DeleteUser(id string) error
 	UpdateUser(id string, updates map[string]interface{}) error
 	ModifyCredit(uid string, value int) error
-	SearchInBio(term string) (*[]domain.User, error)
 }
 
 type UserService struct {
@@ -116,18 +115,6 @@ func (s *UserService) UpdateUser(id string, updates map[string]interface{}) erro
 		}
 	}
 	return s.UST.UpdateUser(id, updates)
-}
-
-func (s *UserService) SearchInBio(term string) (*[]domain.User, error) {
-	users, err := s.UST.SearchInBio(term)
-	if err != nil {
-		return nil, errors.Wrap(err, "search failed")
-	}
-
-	for idx := range *users {
-		(*users)[idx].Password = ""
-	}
-	return users, nil
 }
 
 func hashPassword(password string) (string, error) {

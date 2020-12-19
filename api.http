@@ -1,6 +1,6 @@
 @base = http://127.0.0.1:8080
 
-POST {{base}}/register
+POST {{base}}/users
 
 {
     "username":"armin",
@@ -38,16 +38,11 @@ Cookie: {{auth.response.headers.Set-Cookie}}
     "credit":"10000"
 }
 
-###
-POST {{base}}/search
 
-{
-    "term":"software"
-}
 
 ###
 # @name addContent
-POST {{base}}/content 
+POST {{base}}/contents
 Cookie: {{auth.response.headers.Set-Cookie}}
 
 {
@@ -60,15 +55,12 @@ Cookie: {{auth.response.headers.Set-Cookie}}
 }
 
 ###
-POST {{base}}/download
+GET {{base}}/contents?id={{addContent.response.body.id}}
 Cookie: {{auth.response.headers.Set-Cookie}}
 
-{
-    "id":"{{addContent.response.body.id}}"
-}
 
 ###
-DELETE {{base}}/content
+DELETE {{base}}/contents
 Cookie: {{auth.response.headers.Set-Cookie}}
 
 {
@@ -76,7 +68,7 @@ Cookie: {{auth.response.headers.Set-Cookie}}
 }
 
 ###
-PUT {{base}}/content
+PUT {{base}}/contents
 Cookie: {{auth.response.headers.Set-Cookie}}
 
 {
@@ -84,4 +76,11 @@ Cookie: {{auth.response.headers.Set-Cookie}}
     "name":"casino royal",
     "description":"james bonds' movie",
     "size":3000
+}
+
+###
+POST {{base}}/search
+
+{
+    "term":"software"
 }
