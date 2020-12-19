@@ -7,11 +7,13 @@ import (
 	"net/http"
 
 	"github.com/google/uuid"
+	"github.com/pkg/errors"
 )
 
 type ContentStore interface {
 	AddContent(c *domain.Content) error
-	GetCid(id string) (string, error)
+	DeleteContent(id string) error
+	GetContent(id string) (*domain.Content, error)
 }
 
 type ContentService struct {
@@ -34,14 +36,26 @@ func (s *ContentService) RegisterContent(c *domain.Content) *Error {
 	return nil
 }
 
-func (s *ContentService) GetContentWithID(id string) (string, error) {
+func (s *ContentService) GetContentWithID(id string) (*domain.Content, error) {
 	// check if user has required credit
 	// add to uploader and subtract from downloader
-	return s.CST.GetCid(id)
+	return s.CST.GetContent(id)
+}
+
+func (s *ContentService) DeleteContent(uid, id string) error {
+	c, err := s.GetContentWithID(id)
+	if err != nil {
+		return errors.Wrap(err, "failed to get content id")
+	}
+	if uid != c.UploaderID {
+		return errors.New("failed to delete: only the uploader can delete file")
+	}
+	err = s.UST.ModifyCredit(uid, -int(c.Size))
+	if err != nil {
+		return errors.Wrap(err, "failed to decrease credit")
+	}
+	return s.CST.DeleteContent(id)
 }
 
 // add update function
-
-// add delete function: subtract credit from uploader
-
 // add content discovery functions

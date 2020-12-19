@@ -30,10 +30,28 @@ func (h *Handler) GetContentHandler(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	cid, err := h.CS.GetContentWithID(input.ID)
+	content, err := h.CS.GetContentWithID(input.ID)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"cid": cid})
+	c.JSON(http.StatusOK, gin.H{"content": content})
+}
+
+func (h *Handler) DeleteContentHandler(c *gin.Context) {
+	input := struct {
+		ID string `json:"id"`
+	}{}
+	if err := c.ShouldBindJSON(&input); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	uid := c.GetString("id")
+	err := h.CS.DeleteContent(uid, input.ID)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"msg": "content deleted"})
+
 }

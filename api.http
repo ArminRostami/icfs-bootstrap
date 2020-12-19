@@ -63,5 +63,13 @@ POST {{base}}/download
 Cookie: {{auth.response.headers.Set-Cookie}}
 
 {
-    "id":"8a637858-b5c3-4951-9c56-e826ecbf2116"
+    "id":"e2e61612-1289-4c76-8dbf-84c1ff086335"
+}
+
+###
+DELETE {{base}}/content
+Cookie: {{auth.response.headers.Set-Cookie}}
+
+{
+    "id":"e2e61612-1289-4c76-8dbf-84c1ff086335"
 }
