@@ -16,6 +16,7 @@ type ContentStore interface {
 	GetContent(id string) (*domain.Content, error)
 	UpdateContent(id string, updates map[string]interface{}) error
 	SearchContent(keys, values []string) (*[]domain.Content, error)
+	IncrementDownloads(id string) error
 }
 
 type ContentService struct {
@@ -65,6 +66,11 @@ func (s *ContentService) GetContentWithID(uid, id string) (*domain.Content, erro
 	err = s.UST.ModifyCredit(uid, -int(content.Size))
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to subtract credit from downloader")
+	}
+
+	err = s.CST.IncrementDownloads(content.ID)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to add to downloads")
 	}
 
 	return s.CST.GetContent(id)

@@ -82,3 +82,15 @@ func getInterfaceSlice(strs []string) []interface{} {
 	}
 	return r
 }
+
+func (cs *ContentStore) IncrementDownloads(id string) error {
+	q := fmt.Sprintf(`UPDATE %s SET downloads = downloads + 1 WHERE id=$1`, contentsTable)
+	rows, err := cs.CR.Exec(q, id)
+	if err != nil {
+		return errors.Wrap(err, "failed to update content")
+	}
+	if rows < 1 {
+		return errors.New("operation complete but no row was affected")
+	}
+	return nil
+}
