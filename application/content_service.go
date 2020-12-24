@@ -131,6 +131,9 @@ func (s *ContentService) SearchContent(search map[string]string) (*[]domain.Cont
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to search")
 	}
+	for i := range *results {
+		(*results)[i].CID = ""
+	}
 	return results, nil
 }
 

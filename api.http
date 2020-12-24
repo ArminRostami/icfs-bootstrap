@@ -83,6 +83,5 @@ POST {{base}}/search
 
 {
     "name":"casino",
-    "description":"bonds",
-    "extension":"mp4"
+    "description":"bonds"
 }
