@@ -15,6 +15,7 @@ type ContentStore interface {
 	DeleteContent(id string) error
 	GetContent(id string) (*domain.Content, error)
 	UpdateContent(id string, updates map[string]interface{}) error
+	SearchContent(keys, values []string) (*[]domain.Content, error)
 }
 
 type ContentService struct {
@@ -112,4 +113,30 @@ func (s *ContentService) UpdateContent(uid string, updates map[string]interface{
 
 }
 
-// add content discovery functions
+func (s *ContentService) SearchContent(search map[string]string) (*[]domain.Content, error) {
+	validKeys := map[string]struct{}{"name": {}, "description": {}, "filename": {}, "extension": {}, "category": {}}
+	for key := range search {
+		if _, exists := validKeys[key]; !exists {
+			delete(search, key)
+		}
+	}
+
+	results, err := s.CST.SearchContent(getSlicesFromMap(search))
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to search")
+	}
+	return results, nil
+}
+
+func getSlicesFromMap(m map[string]string) ([]string, []string) {
+	keys := make([]string, len(m))
+	values := make([]string, len(m))
+
+	count := 0
+	for k, v := range m {
+		keys[count] = k
+		values[count] = v
+		count++
+	}
+	return keys, values
+}

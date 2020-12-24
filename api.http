@@ -82,5 +82,7 @@ Cookie: {{auth.response.headers.Set-Cookie}}
 POST {{base}}/search
 
 {
-    "term":"software"
+    "name":"casino",
+    "description":"bonds",
+    "extension":"mp4"
 }

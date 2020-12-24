@@ -70,20 +70,15 @@ func (h *Handler) ContentUpdateHandler(c *gin.Context) {
 }
 
 func (h *Handler) SearchHandler(c *gin.Context) {
-	panic("not implemented")
-	// var search map[string]string
-	// if err := c.ShouldBindJSON(&search); err != nil {
-	// 	c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-	// 	return
-	// }
-	// if _, exists := search["term"]; !exists {
-	// 	c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": `key "term" does not exist`})
-	// 	return
-	// }
-	// results, err := h.USV.SearchInBio(search["term"])
-	// if err != nil {
-	// 	c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-	// 	return
-	// }
-	// c.JSON(http.StatusOK, results)
+	var search map[string]string
+	if err := c.ShouldBindJSON(&search); err != nil {
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	results, err := h.CS.SearchContent(search)
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, results)
 }
