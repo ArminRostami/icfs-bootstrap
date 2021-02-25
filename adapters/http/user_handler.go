@@ -1,7 +1,7 @@
 package http
 
 import (
-	"icfs_cr/domain"
+	"icfs_pg/domain"
 	"net/http"
 
 	"github.com/gin-gonic/gin"

@@ -1,5 +1,5 @@
 // Package crdb includes cockroachDB implementation of application interfaces
-package crdb
+package postgres
 
 import (
 	_ "github.com/jackc/pgx/stdlib"
@@ -7,11 +7,11 @@ import (
 	"github.com/pkg/errors"
 )
 
-type CRDB struct {
+type PGSQL struct {
 	db *sqlx.DB
 }
 
-func New(conStr string) (*CRDB, error) {
+func New(conStr string) (*PGSQL, error) {
 	dbx, err := sqlx.Connect("pgx", conStr)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to connect to db")
@@ -20,10 +20,10 @@ func New(conStr string) (*CRDB, error) {
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to execute schema")
 	}
-	return &CRDB{db: dbx}, nil
+	return &PGSQL{db: dbx}, nil
 }
 
-func (c *CRDB) NamedExec(query string, arg interface{}) (int64, error) {
+func (c *PGSQL) NamedExec(query string, arg interface{}) (int64, error) {
 	res, err := c.db.NamedExec(query, arg)
 	if err != nil {
 		return -1, errors.Wrap(err, "failed to execute named query")
@@ -35,7 +35,7 @@ func (c *CRDB) NamedExec(query string, arg interface{}) (int64, error) {
 	return rows, nil
 }
 
-func (c *CRDB) Exec(query string, args ...interface{}) (int64, error) {
+func (c *PGSQL) Exec(query string, args ...interface{}) (int64, error) {
 	res, err := c.db.Exec(query, args...)
 	if err != nil {
 		return -1, errors.Wrap(err, "failed to execute query")

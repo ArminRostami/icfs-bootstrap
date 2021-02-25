@@ -2,9 +2,9 @@ package app
 
 import (
 	"fmt"
-	"icfs_cr/domain"
-	"mime"
+	"icfs_pg/domain"
 	"net/http"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/pkg/errors"
@@ -27,7 +27,9 @@ type ContentService struct {
 func (s *ContentService) RegisterContent(c *domain.Content) (string, *Error) {
 	c.ID = uuid.New().String()
 	c.Downloads = 0
-	c.Category = mime.TypeByExtension(fmt.Sprintf(".%s", c.Extension))
+	c.UploadedAt = time.Now()
+	c.LastModified = c.UploadedAt
+	c.Description = fmt.Sprintf("%.200s", c.Description)
 	err := s.CST.AddContent(c)
 	if err != nil {
 		return "", &Error{Status: http.StatusInternalServerError, Err: err}
@@ -91,6 +93,7 @@ func (s *ContentService) DeleteContent(uid, id string) error {
 	return s.CST.DeleteContent(id)
 }
 
+// TODO: consider removing update functionality for contents
 func (s *ContentService) UpdateContent(uid string, updates map[string]interface{}) error {
 	id, exists := updates["id"]
 	if !exists {
@@ -120,7 +123,7 @@ func (s *ContentService) UpdateContent(uid string, updates map[string]interface{
 }
 
 func (s *ContentService) SearchContent(search map[string]string) (*[]domain.Content, error) {
-	validKeys := map[string]struct{}{"name": {}, "description": {}, "filename": {}, "extension": {}, "category": {}}
+	validKeys := map[string]struct{}{"name": {}, "description": {}, "filename": {}, "extension": {}}
 	for key := range search {
 		if _, exists := validKeys[key]; !exists {
 			delete(search, key)

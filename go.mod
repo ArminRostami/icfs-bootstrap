@@ -1,4 +1,4 @@
-module icfs_cr
+module icfs_pg
 
 go 1.15
 

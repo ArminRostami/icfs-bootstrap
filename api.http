@@ -1,12 +1,11 @@
-@base = http://127.0.0.1:8080
+@base = http://127.0.0.1:8000
 
 POST {{base}}/users
 
 {
     "username":"armin",
     "password":"asdf",
-    "email":"aliali@gmail.com",
-    "bio":"studying hardware engineering"
+    "email":"rostamiarmin@gmail.com"
 }
 
 ###
@@ -46,12 +45,12 @@ POST {{base}}/contents
 Cookie: {{auth.response.headers.Set-Cookie}}
 
 {
-    "cid":"a2s3d4fsadsf5a6s7d8fasds",
-    "name":"casino royale",
-    "description":"james bonds' casino royale movie",
-    "filename":"casino royale bluray 720p",
-    "extension":"mkv",
-    "size":2048.69
+    "cid":"dsfs3d4s7d8sdsa2safasadsf5a6",
+    "description":"James Bond descends into mystery as he tries to stop a mysterious organisation from eliminating a country's most valuable resource. James Bond descends into mystery as he tries to stop a mysterious organisation from eliminating a country's most valuable resource.",
+    "name":"Quantum of Solace (2008) 720p",
+    "extension":"mp4",
+    "size":1048.69,
+    "file_type":"video"
 }
 
 ###
@@ -82,6 +81,6 @@ Cookie: {{auth.response.headers.Set-Cookie}}
 POST {{base}}/search
 
 {
-    "name":"casino",
-    "description":"bonds"
+    "description":"bond",
+    "extension":"mp4"
 }

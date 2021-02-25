@@ -3,7 +3,7 @@ package app
 
 import (
 	"fmt"
-	"icfs_cr/domain"
+	"icfs_pg/domain"
 	"net/http"
 	"time"
 
@@ -108,7 +108,7 @@ func (s *UserService) UpdateUser(id string, updates map[string]interface{}) erro
 		updates["password"] = hashed
 	}
 
-	validKeys := map[string]struct{}{"password": {}, "email": {}, "bio": {}}
+	validKeys := map[string]struct{}{"password": {}, "email": {}}
 	for key := range updates {
 		if _, exists := validKeys[key]; !exists {
 			delete(updates, key)
