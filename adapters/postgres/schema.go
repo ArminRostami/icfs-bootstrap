@@ -35,6 +35,7 @@ CREATE TABLE IF NOT EXISTS contents(
 	description varchar(200),
 	size FLOAT NOT NULL,
 	downloads INT NOT NULL DEFAULT 0,
+	rating FLOAT check(rating >= 0 and rating <= 5) NOT NULL DEFAULT 0,
 	uploaded_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
 	last_modified TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
@@ -45,5 +46,16 @@ CREATE TABLE IF NOT EXISTS ratings(
 	content_id UUID REFERENCES contents(id) ON DELETE RESTRICT NOT NULL,
 	UNIQUE(rating, user_id)
 );
+
+CREATE OR REPLACE Function update_rating() RETURNS trigger AS $update_rating$
+BEGIN
+update contents set rating = (select avg(rating) from ratings where content_id=NEW.content_id)
+where id=NEW.content_id;
+return null;
+END;
+$update_rating$ LANGUAGE plpgsql;
+
+CREATE TRIGGER update_rating AFTER INSERT ON ratings
+FOR EACH ROW EXECUTE FUNCTION update_rating();
 
 `
