@@ -44,7 +44,7 @@ CREATE TABLE IF NOT EXISTS ratings(
 	rating FLOAT check(rating >= 0 and rating <= 5) NOT NULL,
 	user_id UUID REFERENCES users(id) ON DELETE RESTRICT NOT NULL,
 	content_id UUID REFERENCES contents(id) ON DELETE RESTRICT NOT NULL,
-	UNIQUE(rating, user_id)
+	CONSTRAINT unique_ratings UNIQUE(content_id, user_id)
 );
 
 CREATE OR REPLACE Function update_rating() RETURNS trigger AS $update_rating$
@@ -55,7 +55,7 @@ return null;
 END;
 $update_rating$ LANGUAGE plpgsql;
 
-CREATE TRIGGER update_rating AFTER INSERT ON ratings
+CREATE TRIGGER update_rating AFTER INSERT OR UPDATE ON ratings
 FOR EACH ROW EXECUTE FUNCTION update_rating();
 
 `

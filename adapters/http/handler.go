@@ -9,9 +9,9 @@ import (
 )
 
 type Handler struct {
-	ge  *gin.Engine
-	USV *app.UserService
-	CS  *app.ContentService
+	ge *gin.Engine
+	US *app.UserService
+	CS *app.ContentService
 }
 
 func (h *Handler) Serve() error {
@@ -34,6 +34,7 @@ func (h *Handler) SetupRoutes() {
 	h.ge.PUT("/contents", h.AuthorizeJWT(), h.ContentUpdateHandler)
 	h.ge.DELETE("/contents", h.AuthorizeJWT(), h.DeleteContentHandler)
 
+	h.ge.POST("/contents/rate", h.AuthorizeJWT(), h.RateContentHandler)
 	h.ge.POST("/search", h.SearchHandler)
 }
 

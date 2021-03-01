@@ -16,7 +16,7 @@ func (h *Handler) RegisterHandler(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	id, appErr := h.USV.RegisterUser(&user)
+	id, appErr := h.US.RegisterUser(&user)
 	if appErr != nil {
 		renderError(c, appErr)
 		return
@@ -27,7 +27,7 @@ func (h *Handler) RegisterHandler(c *gin.Context) {
 func (h *Handler) DeleteUserHandler(c *gin.Context) {
 	id := c.GetString("id")
 
-	err := h.USV.DeleteUser(id)
+	err := h.US.DeleteUser(id)
 	if err != nil {
 		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": "failed to delete user"})
 		return
@@ -41,7 +41,7 @@ func (h *Handler) LoginHandler(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	tok, err := h.USV.AuthenticateUser(user.Username, user.Password)
+	tok, err := h.US.AuthenticateUser(user.Username, user.Password)
 	if err != nil {
 		renderError(c, err)
 		return
@@ -52,7 +52,7 @@ func (h *Handler) LoginHandler(c *gin.Context) {
 
 func (h *Handler) GetUserInfo(c *gin.Context) {
 	id := c.GetString("id")
-	u, err := h.USV.GetUserWithID(id)
+	u, err := h.US.GetUserWithID(id)
 	if err != nil {
 		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -67,7 +67,7 @@ func (h *Handler) AuthorizeJWT() gin.HandlerFunc {
 			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
 			return
 		}
-		claims, err := h.USV.ValidateAuth(jwt)
+		claims, err := h.US.ValidateAuth(jwt)
 		if err != nil {
 			c.AbortWithStatus(http.StatusUnauthorized)
 		}
@@ -85,7 +85,7 @@ func (h *Handler) UserUpdateHandler(c *gin.Context) {
 		return
 	}
 
-	err := h.USV.UpdateUser(id, updates)
+	err := h.US.UpdateUser(id, updates)
 	if err != nil {
 		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return

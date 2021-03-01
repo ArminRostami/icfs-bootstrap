@@ -12,6 +12,7 @@ type ContentStore struct {
 }
 
 const contentsTable = "contents"
+const ratingsTable = "ratings"
 
 func (cs *ContentStore) AddContent(c *domain.Content) error {
 	rows, err := cs.DB.NamedExec(`
@@ -30,7 +31,7 @@ func (cs *ContentStore) GetContent(id string) (*domain.Content, error) {
 	var c domain.Content
 	err := cs.DB.db.Get(&c, `
 	SELECT c.id, c.cid, c.uploader_id, c.name, c.extension, c.description, 
-	c.size, c.downloads, c.uploaded_at, c.last_modified, f.file_type
+	c.size, c.downloads, c.uploaded_at, c.last_modified, c.rating, f.file_type
 	FROM ftypes f left join contents c on f.id = c.type_id 
 	WHERE c.id = $1`, id)
 	if err != nil {
@@ -69,7 +70,7 @@ func (cs *ContentStore) SearchContent(keys, values []string) (*[]domain.Content,
 	var results []domain.Content
 	q := fmt.Sprintf(`
 	SELECT c.id, c.cid, c.uploader_id, c.name, c.extension, c.description, 
-	c.size, c.downloads, c.uploaded_at, c.last_modified, f.file_type
+	c.size, c.downloads, c.uploaded_at, c.last_modified, c.rating, f.file_type
 	FROM ftypes f left join contents c on f.id = c.type_id 
 	WHERE %s ILIKE $1`, keys[0])
 	for i := 1; i < len(keys); i++ {
@@ -94,6 +95,25 @@ func getInterfaceSlice(strs []string) []interface{} {
 func (cs *ContentStore) IncrementDownloads(id string) error {
 	q := fmt.Sprintf(`UPDATE %s SET downloads = downloads + 1 WHERE id=$1`, contentsTable)
 	rows, err := cs.DB.Exec(q, id)
+	if err != nil {
+		return errors.Wrap(err, "failed to update content")
+	}
+	if rows < 1 {
+		return errors.New("operation complete but no row was affected")
+	}
+	return nil
+}
+
+func (cs *ContentStore) RateContent(rating float32, uid, cid string) error {
+	q := fmt.Sprintf(`
+	INSERT into %s(rating,user_id,content_id) 
+	values($1,$2,$3)
+	ON CONFLICT ON CONSTRAINT unique_ratings DO 
+	UPDATE set rating=$1
+	where ratings.user_id=$2
+	and ratings.content_id=$3;
+	`, ratingsTable)
+	rows, err := cs.DB.Exec(q, rating, uid, cid)
 	if err != nil {
 		return errors.Wrap(err, "failed to update content")
 	}

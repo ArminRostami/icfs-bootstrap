@@ -82,3 +82,21 @@ func (h *Handler) SearchHandler(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, results)
 }
+
+func (h *Handler) RateContentHandler(c *gin.Context) {
+	input := struct {
+		Rating float32 `json:"rating"`
+		CID    string  `json:"content_id"`
+	}{}
+	if err := c.ShouldBindJSON(&input); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	uid := c.GetString("id")
+	err := h.CS.RateContent(input.Rating, uid, input.CID)
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"msg": "rating submitted."})
+}

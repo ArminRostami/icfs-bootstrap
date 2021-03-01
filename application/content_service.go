@@ -17,6 +17,7 @@ type ContentStore interface {
 	UpdateContent(id string, updates map[string]interface{}) error
 	SearchContent(keys, values []string) (*[]domain.Content, error)
 	IncrementDownloads(id string) error
+	RateContent(rating float32, uid, cid string) error
 }
 
 type ContentService struct {
@@ -41,6 +42,7 @@ func (s *ContentService) RegisterContent(c *domain.Content) (string, *Error) {
 	return c.ID, nil
 }
 
+// TODO: add transaction support:
 func (s *ContentService) GetContentWithID(uid, id string) (*domain.Content, error) {
 	downloader, err := s.UST.GetUserWithID(uid)
 	if err != nil {
@@ -120,6 +122,10 @@ func (s *ContentService) UpdateContent(uid string, updates map[string]interface{
 
 	return s.CST.UpdateContent(idStr, updates)
 
+}
+
+func (s *ContentService) RateContent(rating float32, uid, cid string) error {
+	return s.CST.RateContent(rating, uid, cid)
 }
 
 func (s *ContentService) SearchContent(search map[string]string) (*[]domain.Content, error) {

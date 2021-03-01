@@ -20,7 +20,7 @@ func run() error {
 	contentStore := &db.ContentStore{DB: pgsql}
 	contentService := &app.ContentService{CST: contentStore, UST: userStore}
 	userService := &app.UserService{UST: userStore}
-	handler := http.Handler{USV: userService, CS: contentService}
+	handler := http.Handler{US: userService, CS: contentService}
 	return handler.Serve()
 }
 
