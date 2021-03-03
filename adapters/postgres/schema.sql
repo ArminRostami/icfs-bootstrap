@@ -1,11 +1,10 @@
-package postgres
+-- FIXME: don't drop these
 
-// TODO: remove the first lines
-var schema = `
 DROP TABLE ratings;
 DROP TABLE contents; 
 DROP TABLE users;
 DROP TABLE ftypes;
+
 
 CREATE TABLE IF NOT EXISTS users(
 	id UUID PRIMARY KEY,
@@ -37,8 +36,18 @@ CREATE TABLE IF NOT EXISTS contents(
 	downloads INT NOT NULL DEFAULT 0,
 	rating FLOAT check(rating >= 0 and rating <= 5) NOT NULL DEFAULT 0,
 	uploaded_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-	last_modified TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+	last_modified TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+	tsv tsvector GENERATED ALWAYS AS (
+		setweight(to_tsvector('english', coalesce(name, '')), 'A') ||
+		setweight(to_tsvector('english', coalesce(extension, '')), 'B') ||
+		setweight(to_tsvector('english', coalesce(description, '')), 'B') 
+	) STORED
 );
+
+
+
+CREATE INDEX textsearch_idx ON contents USING GIN (tsv);
 
 CREATE TABLE IF NOT EXISTS ratings(
 	rating FLOAT check(rating >= 0 and rating <= 5) NOT NULL,
@@ -57,5 +66,3 @@ $update_rating$ LANGUAGE plpgsql;
 
 CREATE TRIGGER update_rating AFTER INSERT OR UPDATE ON ratings
 FOR EACH ROW EXECUTE FUNCTION update_rating();
-
-`

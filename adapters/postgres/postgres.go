@@ -2,6 +2,8 @@
 package postgres
 
 import (
+	"os"
+
 	_ "github.com/jackc/pgx/stdlib"
 	"github.com/jmoiron/sqlx"
 	"github.com/pkg/errors"
@@ -11,12 +13,18 @@ type PGSQL struct {
 	db *sqlx.DB
 }
 
+const schemaFile = "./adapters/postgres/schema.sql"
+
 func New(conStr string) (*PGSQL, error) {
 	dbx, err := sqlx.Connect("pgx", conStr)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to connect to db")
 	}
-	_, err = dbx.Exec(schema)
+	schemaBytes, err := os.ReadFile(schemaFile)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to open schema file")
+	}
+	_, err = dbx.Exec(string(schemaBytes))
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to execute schema")
 	}
