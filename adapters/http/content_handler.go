@@ -100,3 +100,20 @@ func (h *Handler) RateContentHandler(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, gin.H{"msg": "rating submitted."})
 }
+
+func (h *Handler) TextSearchHandler(c *gin.Context) {
+	input := struct {
+		Term string `json:"term"`
+	}{}
+	if err := c.ShouldBindJSON(&input); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	results, err := h.CS.TextSearch(input.Term)
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"results": results})
+
+}

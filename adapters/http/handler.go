@@ -36,6 +36,7 @@ func (h *Handler) SetupRoutes() {
 
 	h.ge.POST("/contents/rate", h.AuthorizeJWT(), h.RateContentHandler)
 	h.ge.POST("/search", h.SearchHandler)
+	h.ge.POST("/textsearch", h.TextSearchHandler)
 }
 
 func renderError(c *gin.Context, appErr *app.Error) {

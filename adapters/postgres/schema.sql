@@ -1,16 +1,18 @@
 -- FIXME: don't drop these
 
+--/*
 DROP TABLE ratings;
 DROP TABLE contents; 
 DROP TABLE users;
 DROP TABLE ftypes;
+--*/
 
 
 CREATE TABLE IF NOT EXISTS users(
 	id UUID PRIMARY KEY,
 	username varchar(40) NOT NULL UNIQUE,
 	password char(60) NOT NULL,
-	email text NOT NULL,
+	email text NOT NULL UNIQUE,
 	credit INT NOT NULL DEFAULT 0,
 	created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
 	updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
@@ -47,7 +49,7 @@ CREATE TABLE IF NOT EXISTS contents(
 
 
 
-CREATE INDEX textsearch_idx ON contents USING GIN (tsv);
+CREATE INDEX IF NOT EXISTS textsearch_idx ON contents USING GIN (tsv);
 
 CREATE TABLE IF NOT EXISTS ratings(
 	rating FLOAT check(rating >= 0 and rating <= 5) NOT NULL,
@@ -63,6 +65,8 @@ where id=NEW.content_id;
 return null;
 END;
 $update_rating$ LANGUAGE plpgsql;
+
+DROP TRIGGER IF EXISTS update_rating on ratings;
 
 CREATE TRIGGER update_rating AFTER INSERT OR UPDATE ON ratings
 FOR EACH ROW EXECUTE FUNCTION update_rating();

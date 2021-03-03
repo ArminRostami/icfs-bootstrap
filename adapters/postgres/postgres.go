@@ -13,7 +13,7 @@ type PGSQL struct {
 	db *sqlx.DB
 }
 
-const schemaFile = "./adapters/postgres/schema.sql"
+const schemaFile = "../adapters/postgres/schema.sql"
 
 func New(conStr string) (*PGSQL, error) {
 	dbx, err := sqlx.Connect("pgx", conStr)

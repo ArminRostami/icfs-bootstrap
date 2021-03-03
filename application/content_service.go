@@ -16,6 +16,7 @@ type ContentStore interface {
 	GetContent(id string) (*domain.Content, error)
 	UpdateContent(id string, updates map[string]interface{}) error
 	SearchContent(keys, values []string) (*[]domain.Content, error)
+	TextSearch(term string) (*[]domain.Content, error)
 	IncrementDownloads(id string) error
 	RateContent(rating float32, uid, cid string) error
 }
@@ -157,4 +158,8 @@ func getSlicesFromMap(m map[string]string) ([]string, []string) {
 		count++
 	}
 	return keys, values
+}
+
+func (s *ContentService) TextSearch(term string) (*[]domain.Content, error) {
+	return s.CST.TextSearch(term)
 }

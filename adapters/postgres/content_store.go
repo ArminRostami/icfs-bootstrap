@@ -122,3 +122,18 @@ func (cs *ContentStore) RateContent(rating float32, uid, cid string) error {
 	}
 	return nil
 }
+
+func (cs *ContentStore) TextSearch(term string) (*[]domain.Content, error) {
+	var results []domain.Content
+	q := `
+	SELECT c.id, c.uploader_id, c.name, c.extension, c.description, 
+	c.size, c.downloads, c.uploaded_at, c.rating, f.file_type
+	FROM ftypes f left join contents c on f.id = c.type_id, websearch_to_tsquery('english', $1) query
+	WHERE query @@ tsv
+	ORDER BY ts_rank_cd(tsv, query) DESC;`
+	err := cs.DB.db.Select(&results, q, term)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to get results")
+	}
+	return &results, nil
+}
