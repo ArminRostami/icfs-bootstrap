@@ -1,4 +1,4 @@
-// Package crdb includes cockroachDB implementation of application interfaces
+// Package postgres includes implementation of application interfaces
 package postgres
 
 import (

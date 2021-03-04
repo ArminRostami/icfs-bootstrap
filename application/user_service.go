@@ -50,23 +50,23 @@ func (s *UserService) RegisterUser(user *domain.User) (string, *Error) {
 	return id, nil
 }
 
-func (s *UserService) AuthenticateUser(username, password string) (string, *Error) {
+func (s *UserService) AuthenticateUser(username, password string) (*domain.User, string, *Error) {
 	user, err := s.UST.GetUserWithName(username)
 	if err != nil {
-		return "", &Error{http.StatusUnauthorized, errors.Wrap(err, "failed to get user from db")}
+		return nil, "", &Error{http.StatusUnauthorized, errors.Wrap(err, "failed to get user from db")}
 	}
 
 	if match := checkPassword(password, user.Password); !match {
-		return "", &Error{http.StatusUnauthorized, errors.New("auth failed")}
+		return nil, "", &Error{http.StatusUnauthorized, errors.New("auth failed")}
 	}
 	claims := CustomClaims{ID: user.ID}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	tokenStr, err := token.SignedString([]byte(SigningKey))
 	if err != nil {
-		return "", &Error{http.StatusInternalServerError, errors.Wrap(err, "failed to sign jwt")}
+		return nil, "", &Error{http.StatusInternalServerError, errors.Wrap(err, "failed to sign jwt")}
 	}
-
-	return tokenStr, nil
+	user.Password = ""
+	return user, tokenStr, nil
 }
 
 func (s *UserService) ValidateAuth(tokenString string) (*CustomClaims, error) {

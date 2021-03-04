@@ -1,11 +1,11 @@
 -- FIXME: don't drop these
 
---/*
+/*
 DROP TABLE ratings;
 DROP TABLE contents; 
 DROP TABLE users;
 DROP TABLE ftypes;
---*/
+*/
 
 
 CREATE TABLE IF NOT EXISTS users(
@@ -23,8 +23,8 @@ CREATE TABLE IF NOT EXISTS ftypes(
 	file_type varchar(15) NOT NULL
 );
 
-INSERT INTO ftypes(file_type) VALUES ('font'),('text'),('image'),('audio'),('video'),
-('spreadsheet'),('presentation'),('document'),('archive'),('application');
+--INSERT INTO ftypes(file_type) VALUES ('font'),('text'),('image'),('audio'),('video'),
+--('spreadsheet'),('presentation'),('document'),('archive'),('application');
 
 CREATE TABLE IF NOT EXISTS contents(
 	id UUID PRIMARY KEY,

@@ -3,17 +3,17 @@
 POST {{base}}/users
 
 {
-    "username":"armin1",
+    "username":"ehsan",
     "password":"asdf",
-    "email":"rostamiarmin@gmail.com"
+    "email":"rostamiehsan@gmail.com"
 }
 
 ###
 # @name auth
-POST {{base}}/login
+POST {{base}}/users/login
 
 {
-    "username":"armin1",
+    "username":"armin",
     "password":"asdf"
 }
 
@@ -45,11 +45,11 @@ POST {{base}}/contents
 Cookie: {{auth.response.headers.Set-Cookie}}
 
 {
-    "cid":"dsfs3d4s7d8sdsa2safsadasdfasadsf5a6",
-    "description":"James Bond descends into mystery as he tries to stop a mysterious organisation from eliminating a country's most valuable resource. James Bond descends into mystery as he tries to stop a mysterious organisation from eliminating a country's most valuable resource.",
-    "name":"Bond movie (2008) 720p",
-    "extension":"mp4",
-    "size":1048.69,
+    "cid":"dsfs3d4s7d8ssfsdfsasafhdhdaaaffsgsdf6",
+    "description":"a speech to inspire genocide",
+    "name":"hitler speech",
+    "extension":"mkv",
+    "size":1246.3,
     "file_type":"video"
 }
 
@@ -78,11 +78,10 @@ Cookie: {{auth.response.headers.Set-Cookie}}
 }
 
 ###
-POST {{base}}/search
+POST {{base}}/contents/search
 
 {
-    "description":"bond",
-    "extension":"mp4"
+    "term":"mp4"
 }
 
 ###
@@ -90,13 +89,7 @@ POST {{base}}/contents/rate
 Cookie: {{auth.response.headers.Set-Cookie}}
 
 {
-    "rating":3.7,
+    "rating":4.6,
     "content_id":"{{addContent.response.body.id}}"
 }
 
-###
-POST {{base}}/textsearch
-
-{
-    "term":"mp4"
-}

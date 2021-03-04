@@ -69,6 +69,7 @@ func (h *Handler) ContentUpdateHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"msg": "content updated successfully"})
 }
 
+// FIXME: deprecate this api
 func (h *Handler) SearchHandler(c *gin.Context) {
 	var search map[string]string
 	if err := c.ShouldBindJSON(&search); err != nil {

@@ -41,13 +41,13 @@ func (h *Handler) LoginHandler(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	tok, err := h.US.AuthenticateUser(user.Username, user.Password)
+	userData, tok, err := h.US.AuthenticateUser(user.Username, user.Password)
 	if err != nil {
 		renderError(c, err)
 		return
 	}
 	c.SetCookie(JWT, tok, 24*3600, "/", "", true, false)
-	c.JSON(http.StatusOK, gin.H{"username": user.Username})
+	c.JSON(http.StatusOK, gin.H{"data": userData})
 }
 
 func (h *Handler) GetUserInfo(c *gin.Context) {
