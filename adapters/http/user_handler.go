@@ -46,7 +46,8 @@ func (h *Handler) LoginHandler(c *gin.Context) {
 		renderError(c, err)
 		return
 	}
-	c.SetCookie(JWT, tok, 24*3600, "/", "", true, false)
+	c.SetSameSite(http.SameSiteNoneMode)
+	c.SetCookie(JWT, tok, 24*3600, "/", "", true, true)
 	c.JSON(http.StatusOK, gin.H{"data": userData})
 }
 
