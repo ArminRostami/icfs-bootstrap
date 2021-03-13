@@ -10,6 +10,7 @@ import (
 	"github.com/pkg/errors"
 )
 
+// TODO: consider removing searchcontent
 type ContentStore interface {
 	AddContent(c *domain.Content) error
 	DeleteContent(id string) error
@@ -17,6 +18,7 @@ type ContentStore interface {
 	UpdateContent(id string, updates map[string]interface{}) error
 	SearchContent(keys, values []string) (*[]domain.Content, error)
 	TextSearch(term string) (*[]domain.Content, error)
+	GetAll() (*[]domain.Content, error)
 	IncrementDownloads(id string) error
 	RateContent(rating float32, uid, cid string) error
 }
@@ -162,4 +164,8 @@ func getSlicesFromMap(m map[string]string) ([]string, []string) {
 
 func (s *ContentService) TextSearch(term string) (*[]domain.Content, error) {
 	return s.CST.TextSearch(term)
+}
+
+func (s *ContentService) GetAll() (*[]domain.Content, error) {
+	return s.CST.GetAll()
 }

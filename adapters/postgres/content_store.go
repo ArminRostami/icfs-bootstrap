@@ -137,3 +137,17 @@ func (cs *ContentStore) TextSearch(term string) (*[]domain.Content, error) {
 	}
 	return &results, nil
 }
+
+func (cs *ContentStore) GetAll() (*[]domain.Content, error) {
+	var results []domain.Content
+	q := `
+	SELECT c.id, c.uploader_id, c.name, c.extension, c.description, c.size, 
+	c.downloads, c.uploaded_at, c.last_modified, c.rating, f.file_type
+	FROM contents c join ftypes f on f.id = c.type_id;
+	`
+	err := cs.DB.db.Select(&results, q)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to get results")
+	}
+	return &results, nil
+}

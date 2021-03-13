@@ -81,7 +81,7 @@ Cookie: {{auth.response.headers.Set-Cookie}}
 POST {{base}}/contents/search
 
 {
-    "term":"mp4"
+    "term":"bond"
 }
 
 ###
@@ -93,3 +93,5 @@ Cookie: {{auth.response.headers.Set-Cookie}}
     "content_id":"{{addContent.response.body.id}}"
 }
 
+###
+GET {{base}}/contents/all

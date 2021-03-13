@@ -118,3 +118,12 @@ func (h *Handler) TextSearchHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"results": results})
 
 }
+
+func (h *Handler) GetAllContentsHandler(c *gin.Context) {
+	results, err := h.CS.GetAll()
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"results": results})
+}

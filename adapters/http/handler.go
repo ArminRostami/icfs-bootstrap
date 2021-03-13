@@ -45,6 +45,8 @@ func (h *Handler) SetupRoutes() {
 	h.ge.DELETE("/contents", h.AuthorizeJWT(), h.DeleteContentHandler)
 
 	h.ge.POST("/contents/rate", h.AuthorizeJWT(), h.RateContentHandler)
+
+	h.ge.GET("/contents/all", h.GetAllContentsHandler)
 	h.ge.POST("/contents/search", h.TextSearchHandler)
 }
 

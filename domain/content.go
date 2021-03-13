@@ -11,7 +11,7 @@ type Content struct {
 	FileType     string    `json:"file_type" db:"file_type"`
 	UploaderID   string    `json:"uploader_id" db:"uploader_id"`
 	Downloads    int       `json:"downloads" db:"downloads"`
-	Rating       float32   `json:"rating"`
+	Rating       float32   `json:"rating" db:"rating"`
 	Size         float32   `json:"size" db:"size"`
 	UploadedAt   time.Time `json:"uploaded_at" db:"uploaded_at"`
 	LastModified time.Time `json:"last_modified" db:"last_modified"`
