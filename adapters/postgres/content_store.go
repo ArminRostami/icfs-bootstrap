@@ -11,9 +11,6 @@ type ContentStore struct {
 	DB *PGSQL
 }
 
-const contentsTable = "contents"
-const ratingsTable = "ratings"
-
 func (cs *ContentStore) AddContent(c *domain.Content) error {
 	rows, err := cs.DB.NamedExec(`
 	INSERT INTO contents(id,cid,name,description,extension,type_id,uploader_id,size,downloads) 
@@ -40,9 +37,19 @@ func (cs *ContentStore) GetContent(id string) (*domain.Content, error) {
 	return &c, nil
 }
 
+func (cs *ContentStore) AddDownload(uid, id string) error {
+	rows, err := cs.DB.Exec(`INSERT INTO downloads(user_id, content_id) VALUES($1, $2)`, uid, id)
+	if err != nil {
+		return errors.Wrap(err, "failed to add download")
+	}
+	if rows < 1 {
+		return errors.New("operation complete but no row was affected")
+	}
+	return nil
+}
+
 func (cs *ContentStore) DeleteContent(id string) error {
-	query := fmt.Sprintf(`DELETE FROM %s WHERE id=$1;`, contentsTable)
-	rows, err := cs.DB.Exec(query, id)
+	rows, err := cs.DB.Exec(`DELETE FROM contents WHERE id=$1`, id)
 	if err != nil {
 		return errors.Wrap(err, "failed to delete content")
 	}
@@ -54,7 +61,7 @@ func (cs *ContentStore) DeleteContent(id string) error {
 
 func (cs *ContentStore) UpdateContent(id string, updates map[string]interface{}) error {
 	for key, val := range updates {
-		q := fmt.Sprintf(`UPDATE %s SET %s = $1 WHERE id = $2;`, contentsTable, key)
+		q := fmt.Sprintf(`UPDATE contents SET %s = $1 WHERE id = $2;`, key)
 		rows, err := cs.DB.Exec(q, val, id)
 		if err != nil {
 			return errors.Wrap(err, "failed to update content")
@@ -93,8 +100,7 @@ func getInterfaceSlice(strs []string) []interface{} {
 }
 
 func (cs *ContentStore) IncrementDownloads(id string) error {
-	q := fmt.Sprintf(`UPDATE %s SET downloads = downloads + 1 WHERE id=$1`, contentsTable)
-	rows, err := cs.DB.Exec(q, id)
+	rows, err := cs.DB.Exec(`UPDATE contents SET downloads = downloads + 1 WHERE id=$1`, id)
 	if err != nil {
 		return errors.Wrap(err, "failed to update content")
 	}
@@ -105,15 +111,11 @@ func (cs *ContentStore) IncrementDownloads(id string) error {
 }
 
 func (cs *ContentStore) RateContent(rating float32, uid, cid string) error {
-	q := fmt.Sprintf(`
-	INSERT into %s(rating,user_id,content_id) 
-	values($1,$2,$3)
-	ON CONFLICT ON CONSTRAINT unique_ratings DO 
-	UPDATE set rating=$1
-	where ratings.user_id=$2
-	and ratings.content_id=$3;
-	`, ratingsTable)
-	rows, err := cs.DB.Exec(q, rating, uid, cid)
+	rows, err := cs.DB.Exec(`
+	UPDATE downloads set rating=$1
+	where downloads.user_id=$2
+	and downloads.content_id=$3;
+	`, rating, uid, cid)
 	if err != nil {
 		return errors.Wrap(err, "failed to update content")
 	}

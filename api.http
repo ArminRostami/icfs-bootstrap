@@ -3,9 +3,9 @@
 POST {{base}}/users
 
 {
-    "username":"ehsan",
+    "username":"ahmad",
     "password":"asdf",
-    "email":"rostamiehsan@gmail.com"
+    "email":"rostamiahmad@gmail.com"
 }
 
 ###
@@ -45,12 +45,12 @@ POST {{base}}/contents
 Cookie: {{auth.response.headers.Set-Cookie}}
 
 {
-    "cid":"dsfs3d4s7d8ssfsdfsasafhdhdaaaffsgsdf6",
-    "description":"a speech to inspire genocide",
-    "name":"hitler speech",
-    "extension":"mkv",
-    "size":1246.3,
-    "file_type":"video"
+    "cid":"dsfs3mfaggasghashsgsdf6",
+    "description":"a song to send instead of your projects",
+    "name":"mano_yadet",
+    "extension":"mp3",
+    "size":25,
+    "file_type":"audio"
 }
 
 ###

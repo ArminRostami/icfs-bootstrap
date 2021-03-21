@@ -15,6 +15,7 @@ type ContentStore interface {
 	AddContent(c *domain.Content) error
 	DeleteContent(id string) error
 	GetContent(id string) (*domain.Content, error)
+	AddDownload(uid, id string) error
 	UpdateContent(id string, updates map[string]interface{}) error
 	SearchContent(keys, values []string) (*[]domain.Content, error)
 	TextSearch(term string) (*[]domain.Content, error)
@@ -77,10 +78,15 @@ func (s *ContentService) GetContentWithID(uid, id string) (*domain.Content, erro
 
 	err = s.CST.IncrementDownloads(content.ID)
 	if err != nil {
+		return nil, errors.Wrap(err, "failed to increment downloads")
+	}
+
+	err = s.CST.AddDownload(downloader.ID, content.ID)
+	if err != nil {
 		return nil, errors.Wrap(err, "failed to add to downloads")
 	}
 
-	return s.CST.GetContent(id)
+	return content, err
 }
 
 func (s *ContentService) DeleteContent(uid, id string) error {
