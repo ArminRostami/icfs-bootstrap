@@ -16,3 +16,10 @@ type Content struct {
 	UploadedAt   time.Time `json:"uploaded_at" db:"uploaded_at"`
 	LastModified time.Time `json:"last_modified" db:"last_modified"`
 }
+
+type Comment struct {
+	Username string  `json:"username" db:"username"`
+	Rating   float32 `json:"rating" db:"rating"`
+	CText    string  `json:"comment_text" db:"comment_text"`
+	CTime    string  `json:"comment_time" db:"comment_time"`
+}

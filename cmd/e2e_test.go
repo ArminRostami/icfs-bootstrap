@@ -14,6 +14,7 @@ import (
 	_http "icfs_pg/adapters/http"
 	db "icfs_pg/adapters/postgres"
 	app "icfs_pg/application"
+	"icfs_pg/domain"
 
 	. "github.com/franela/goblin"
 	"github.com/gin-gonic/gin"
@@ -221,6 +222,15 @@ func TestE2E(t *testing.T) {
 			g.Assert(err).IsNil()
 			g.Assert(resp.StatusCode).Eql(200)
 		})
+		g.It("should comment on content", func() {
+			body := []byte(fmt.Sprintf(`{
+				"id":"%s",
+				"comment":"terrible stuff"
+			}`, contentIDS[0]))
+			resp, err := client2.Post(contentsAPI+"/comment", TypeAppJson, bytes.NewBuffer(body))
+			g.Assert(err).IsNil()
+			g.Assert(resp.StatusCode).Eql(200)
+		})
 		g.It("should get info", func() {
 			resp, err := client2.Get(usersAPI)
 			g.Assert(err).IsNil()
@@ -233,7 +243,7 @@ func TestE2E(t *testing.T) {
 			cred := mockContent2[0]["size"].(int) + mockContent2[1]["size"].(int) - mockContent1[0]["size"].(int)
 			g.Assert(jsonObj["credit"]).Eql(float64(cred))
 		})
-		g.It("should delete content", func() {
+		g.Xit("should delete contents", func() {
 			for _, c := range contentIDS2 {
 				mapData := map[string]interface{}{
 					"id": c,
@@ -248,7 +258,7 @@ func TestE2E(t *testing.T) {
 				g.Assert(resp.StatusCode).Eql(200)
 			}
 		})
-		g.It("should delete account", func() {
+		g.Xit("should delete account", func() {
 			req, err := http.NewRequest(http.MethodDelete, usersAPI, nil)
 			g.Assert(err).IsNil()
 			resp, err := client2.Do(req)
@@ -259,7 +269,19 @@ func TestE2E(t *testing.T) {
 
 	})
 	g.Describe("user1", func() {
-		g.It("should delete contents", func() {
+		g.It("should read comments", func() {
+			resp, err := client1.Get(contentsAPI + "/comment?id=" + contentIDS[0])
+			g.Assert(err).IsNil()
+			g.Assert(resp.StatusCode).Eql(200)
+			bts, err := io.ReadAll(resp.Body)
+			g.Assert(err).IsNil()
+			var jsonObj []domain.Comment
+			err = json.Unmarshal(bts, &jsonObj)
+			g.Assert(err).IsNil()
+			g.Assert(len(jsonObj) <= 0).IsFalse()
+			g.Assert(jsonObj[0].CText).Eql("terrible stuff")
+		})
+		g.Xit("should delete contents", func() {
 			for _, c := range contentIDS {
 				mapData := map[string]interface{}{
 					"id": c,
@@ -273,7 +295,7 @@ func TestE2E(t *testing.T) {
 				g.Assert(resp.StatusCode).Eql(200)
 			}
 		})
-		g.It("should delete account", func() {
+		g.Xit("should delete account", func() {
 			req, err := http.NewRequest(http.MethodDelete, usersAPI, nil)
 			g.Assert(err).IsNil()
 			resp, err := client1.Do(req)

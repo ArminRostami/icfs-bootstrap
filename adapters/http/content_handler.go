@@ -127,3 +127,33 @@ func (h *Handler) GetAllContentsHandler(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, gin.H{"results": results})
 }
+
+func (h *Handler) CommentHandler(c *gin.Context) {
+	uid := c.GetString(ID)
+
+	input := struct {
+		ID      string `json:"id"`
+		Comment string `json:"comment"`
+	}{}
+	if err := c.ShouldBindJSON(&input); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	err := h.CS.AddComment(uid, input.ID, input.Comment)
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"msg": "comment posted successfully"})
+
+}
+
+func (h *Handler) GetCommentsHandler(c *gin.Context) {
+	id := c.Query("id")
+	comments, err := h.CS.GetComments(id)
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, comments)
+}

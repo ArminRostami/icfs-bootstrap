@@ -1,9 +1,9 @@
 
 
--- DROP TABLE downloads;
--- DROP TABLE contents; 
--- DROP TABLE users;
--- DROP TABLE ftypes;
+DROP TABLE downloads;
+DROP TABLE contents; 
+DROP TABLE users;
+DROP TABLE ftypes;
 
 
 
@@ -13,8 +13,8 @@ CREATE TABLE IF NOT EXISTS users(
 	password char(60) NOT NULL,
 	email text NOT NULL UNIQUE,
 	credit INT NOT NULL DEFAULT 0,
-	created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-	updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+	created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	updated_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE IF NOT EXISTS ftypes(
@@ -22,8 +22,8 @@ CREATE TABLE IF NOT EXISTS ftypes(
 	file_type varchar(15) UNIQUE NOT NULL
 );
 
--- INSERT INTO ftypes(file_type) VALUES ('font'),('text'),('image'),('audio'),('video'),
--- ('spreadsheet'),('presentation'),('document'),('archive'),('application');
+INSERT INTO ftypes(file_type) VALUES ('font'),('text'),('image'),('audio'),('video'),
+('spreadsheet'),('presentation'),('document'),('archive'),('application');
 
 CREATE TABLE IF NOT EXISTS contents(
 	id UUID PRIMARY KEY,
@@ -36,8 +36,8 @@ CREATE TABLE IF NOT EXISTS contents(
 	size FLOAT NOT NULL,
 	downloads INT NOT NULL DEFAULT 0,
 	rating FLOAT check(rating >= 0 and rating <= 5) NOT NULL DEFAULT 2.5,
-	uploaded_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-	last_modified TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	uploaded_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	last_modified TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
 	tsv tsvector GENERATED ALWAYS AS (
 		setweight(to_tsvector('english', coalesce(name, '')), 'A') ||
@@ -51,9 +51,12 @@ CREATE TABLE IF NOT EXISTS contents(
 CREATE INDEX IF NOT EXISTS textsearch_idx ON contents USING GIN (tsv);
 
 CREATE TABLE IF NOT EXISTS downloads(
-	rating FLOAT check(rating >= 0 and rating <= 5) NOT NULL DEFAULT 2.5,
 	user_id UUID REFERENCES users(id) ON DELETE CASCADE NOT NULL,
 	content_id UUID REFERENCES contents(id) ON DELETE CASCADE NOT NULL,
+	rating FLOAT check(rating >= 0 and rating <= 5) NOT NULL DEFAULT 2.5,
+	comment_text varchar(200),
+	comment_time TIMESTAMPTZ,
+	downloaded_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
 	CONSTRAINT unique_ratings UNIQUE(content_id, user_id)
 );
 

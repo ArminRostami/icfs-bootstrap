@@ -3,6 +3,7 @@ package postgres
 import (
 	"fmt"
 	"icfs_pg/domain"
+	"time"
 
 	"github.com/pkg/errors"
 )
@@ -152,4 +153,27 @@ func (cs *ContentStore) GetAll() (*[]domain.Content, error) {
 		return nil, errors.Wrap(err, "failed to get results")
 	}
 	return &results, nil
+}
+
+func (cs *ContentStore) AddComment(uid, id, comment string) error {
+	rows, err := cs.DB.Exec(`UPDATE downloads SET comment_text=$1,comment_time=$2 
+	WHERE user_id=$3 and content_id=$4`, comment, time.Now(), uid, id)
+	if err != nil {
+		return errors.Wrap(err, "failed to add comment")
+	}
+	if rows < 1 {
+		return errors.New("operation complete but no row was affected")
+	}
+	return nil
+}
+
+func (cs *ContentStore) GetComments(id string) (*[]domain.Comment, error) {
+	var comments []domain.Comment
+	q := `SELECT d.comment_text, d.rating, d.comment_time, u.username
+	FROM (SELECT * from downloads WHERE content_id=$1) d left join users u on d.user_id=u.id;`
+	err := cs.DB.db.Select(&comments, q, id)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to get comments")
+	}
+	return &comments, nil
 }

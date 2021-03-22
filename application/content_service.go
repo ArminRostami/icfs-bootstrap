@@ -22,6 +22,8 @@ type ContentStore interface {
 	GetAll() (*[]domain.Content, error)
 	IncrementDownloads(id string) error
 	RateContent(rating float32, uid, cid string) error
+	AddComment(uid, id, comment string) error
+	GetComments(id string) (*[]domain.Comment, error)
 }
 
 type ContentService struct {
@@ -174,4 +176,12 @@ func (s *ContentService) TextSearch(term string) (*[]domain.Content, error) {
 
 func (s *ContentService) GetAll() (*[]domain.Content, error) {
 	return s.CST.GetAll()
+}
+
+func (s *ContentService) AddComment(uid, id, comment string) error {
+	return s.CST.AddComment(uid, id, comment)
+}
+
+func (s *ContentService) GetComments(id string) (*[]domain.Comment, error) {
+	return s.CST.GetComments(id)
 }

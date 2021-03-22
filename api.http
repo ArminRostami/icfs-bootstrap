@@ -3,9 +3,9 @@
 POST {{base}}/users
 
 {
-    "username":"ahmad",
+    "username":"armin",
     "password":"asdf",
-    "email":"rostamiahmad@gmail.com"
+    "email":"rostamiarmin@gmail.com"
 }
 
 ###
@@ -95,3 +95,15 @@ Cookie: {{auth.response.headers.Set-Cookie}}
 
 ###
 GET {{base}}/contents/all
+
+###
+POST {{base}}/contents/comment
+Cookie: {{auth.response.headers.Set-Cookie}}
+
+{
+    "id":"{{addContent.response.body.id}}",
+    "comment":"terrible stuff"
+}
+
+###
+GET {{base}}/contents/comment?id=25620596-82fa-4816-aa85-306fab3cbe39
