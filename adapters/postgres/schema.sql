@@ -35,7 +35,7 @@ CREATE TABLE IF NOT EXISTS contents(
 	description varchar(200),
 	size FLOAT NOT NULL,
 	downloads INT NOT NULL DEFAULT 0,
-	rating FLOAT check(rating >= 0 and rating <= 5),
+	rating FLOAT check(rating >= 0 and rating <= 5) NOT NULL DEFAULT 2.5,
 	uploaded_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
 	last_modified TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
@@ -51,9 +51,9 @@ CREATE TABLE IF NOT EXISTS contents(
 CREATE INDEX IF NOT EXISTS textsearch_idx ON contents USING GIN (tsv);
 
 CREATE TABLE IF NOT EXISTS downloads(
-	rating FLOAT check(rating >= 0 and rating <= 5),
-	user_id UUID REFERENCES users(id) ON DELETE RESTRICT NOT NULL,
-	content_id UUID REFERENCES contents(id) ON DELETE RESTRICT NOT NULL,
+	rating FLOAT check(rating >= 0 and rating <= 5) NOT NULL DEFAULT 2.5,
+	user_id UUID REFERENCES users(id) ON DELETE CASCADE NOT NULL,
+	content_id UUID REFERENCES contents(id) ON DELETE CASCADE NOT NULL,
 	CONSTRAINT unique_ratings UNIQUE(content_id, user_id)
 );
 
