@@ -243,12 +243,23 @@ func TestE2E(t *testing.T) {
 			cred := mockContent2[0]["size"].(int) + mockContent2[1]["size"].(int) - mockContent1[0]["size"].(int)
 			g.Assert(jsonObj["credit"]).Eql(float64(cred))
 		})
+		g.It("should read comments", func() {
+			resp, err := client2.Get(contentsAPI + "/comment?id=" + contentIDS[0])
+			g.Assert(err).IsNil()
+			g.Assert(resp.StatusCode).Eql(200)
+			bts, err := io.ReadAll(resp.Body)
+			g.Assert(err).IsNil()
+			var jsonObj []domain.Comment
+			err = json.Unmarshal(bts, &jsonObj)
+			g.Assert(err).IsNil()
+			g.Assert(len(jsonObj) <= 0).IsFalse()
+			g.Assert(jsonObj[0].CText).Eql("terrible stuff")
+		})
 		g.Xit("should delete contents", func() {
 			for _, c := range contentIDS2 {
 				mapData := map[string]interface{}{
 					"id": c,
 				}
-				// t.Logf("id to del: %v", c)
 				body, err := json.Marshal(mapData)
 				g.Assert(err).IsNil()
 				req, err := http.NewRequest(http.MethodDelete, contentsAPI, bytes.NewBuffer(body))
@@ -269,18 +280,6 @@ func TestE2E(t *testing.T) {
 
 	})
 	g.Describe("user1", func() {
-		g.It("should read comments", func() {
-			resp, err := client1.Get(contentsAPI + "/comment?id=" + contentIDS[0])
-			g.Assert(err).IsNil()
-			g.Assert(resp.StatusCode).Eql(200)
-			bts, err := io.ReadAll(resp.Body)
-			g.Assert(err).IsNil()
-			var jsonObj []domain.Comment
-			err = json.Unmarshal(bts, &jsonObj)
-			g.Assert(err).IsNil()
-			g.Assert(len(jsonObj) <= 0).IsFalse()
-			g.Assert(jsonObj[0].CText).Eql("terrible stuff")
-		})
 		g.Xit("should delete contents", func() {
 			for _, c := range contentIDS {
 				mapData := map[string]interface{}{
