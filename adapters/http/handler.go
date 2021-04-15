@@ -52,6 +52,7 @@ func (h *Handler) SetupRoutes() {
 	h.ge.GET(contentsAPI+"/comment", h.GetCommentsHandler)
 
 	h.ge.GET(contentsAPI+"/all", h.GetAllContentsHandler)
+	h.ge.GET(contentsAPI+"/user", h.AuthorizeJWT(), h.GetUserContentsHandler)
 	h.ge.POST(contentsAPI+"/search", h.TextSearchHandler)
 }
 

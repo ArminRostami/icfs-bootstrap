@@ -24,6 +24,7 @@ type ContentStore interface {
 	RateContent(rating float32, uid, cid string) error
 	AddComment(uid, id, comment string) error
 	GetComments(id string) (*[]domain.Comment, error)
+	GetUserContents(uid string) (*[]domain.Content, error)
 }
 
 type ContentService struct {
@@ -184,4 +185,8 @@ func (s *ContentService) AddComment(uid, id, comment string) error {
 
 func (s *ContentService) GetComments(id string) (*[]domain.Comment, error) {
 	return s.CST.GetComments(id)
+}
+
+func (s *ContentService) GetUserContents(uid string) (*[]domain.Content, error) {
+	return s.CST.GetUserContents(uid)
 }

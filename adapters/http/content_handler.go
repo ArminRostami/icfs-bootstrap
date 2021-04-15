@@ -128,6 +128,17 @@ func (h *Handler) GetAllContentsHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"results": results})
 }
 
+func (h *Handler) GetUserContentsHandler(c *gin.Context) {
+	uid := c.GetString(ID)
+	results, err := h.CS.GetUserContents(uid)
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"results": results})
+
+}
+
 func (h *Handler) CommentHandler(c *gin.Context) {
 	uid := c.GetString(ID)
 

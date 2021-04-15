@@ -37,6 +37,22 @@ var mockContent1 = []map[string]interface{}{
 		"size":        15,
 		"file_type":   "document",
 	},
+	{
+		"cid":         "dsfsajdffjadkdkakajrdafd6",
+		"description": "internship report template",
+		"name":        "internship_report",
+		"extension":   "docx",
+		"size":        35,
+		"file_type":   "document",
+	},
+	{
+		"cid":         "dsfscderhajeafjrdafd6",
+		"description": "a famous farsi font",
+		"name":        "bnazanin",
+		"extension":   "ttf",
+		"size":        5,
+		"file_type":   "font",
+	},
 }
 var mockContent2 = []map[string]interface{}{
 	{
@@ -54,6 +70,22 @@ var mockContent2 = []map[string]interface{}{
 		"extension":   "zip",
 		"size":        3215,
 		"file_type":   "archive",
+	},
+	{
+		"cid":         "dsfssagsahamthsngnsddafd6",
+		"description": "the original windows xp wallpaper",
+		"name":        "win_xp_wallpaper",
+		"extension":   "jpeg",
+		"size":        2,
+		"file_type":   "image",
+	},
+	{
+		"cid":         "dsfssagnsgsndgnbynrdafd6",
+		"description": "intended for crawlers only :)",
+		"name":        "robots",
+		"extension":   "txt",
+		"size":        2,
+		"file_type":   "text",
 	},
 }
 
@@ -166,7 +198,11 @@ func TestE2E(t *testing.T) {
 			var jsonObj map[string]interface{}
 			err = json.Unmarshal(bytes, &jsonObj)
 			g.Assert(err).IsNil()
-			g.Assert(jsonObj["credit"]).Eql(float64(25 + 15))
+			credit := 0
+			for _, c := range mockContent1 {
+				credit += c["size"].(int)
+			}
+			g.Assert(jsonObj["credit"]).Eql(float64(credit))
 			g.Assert(jsonObj["username"]).Eql("testname")
 			g.Assert(jsonObj["email"]).Eql("mailtest@yahoo.com")
 		})
@@ -240,8 +276,12 @@ func TestE2E(t *testing.T) {
 			var jsonObj map[string]interface{}
 			err = json.Unmarshal(bytes, &jsonObj)
 			g.Assert(err).IsNil()
-			cred := mockContent2[0]["size"].(int) + mockContent2[1]["size"].(int) - mockContent1[0]["size"].(int)
-			g.Assert(jsonObj["credit"]).Eql(float64(cred))
+			credit := 0
+			for _, c := range mockContent2 {
+				credit += c["size"].(int)
+			}
+			credit = credit - mockContent1[0]["size"].(int)
+			g.Assert(jsonObj["credit"]).Eql(float64(credit))
 		})
 		g.It("should read comments", func() {
 			resp, err := client2.Get(contentsAPI + "/comment?id=" + contentIDS[0])

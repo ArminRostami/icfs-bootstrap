@@ -177,3 +177,18 @@ func (cs *ContentStore) GetComments(id string) (*[]domain.Comment, error) {
 	}
 	return &comments, nil
 }
+
+func (cs *ContentStore) GetUserContents(uid string) (*[]domain.Content, error) {
+	var results []domain.Content
+	q := `
+	SELECT c.id, c.uploader_id, c.name, c.extension, c.description, c.size, 
+	c.downloads, c.uploaded_at, c.last_modified, c.rating, f.file_type
+	FROM contents c join ftypes f on f.id = c.type_id
+	WHERE c.uploader_id = $1;
+	`
+	err := cs.DB.db.Select(&results, q, uid)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to get results")
+	}
+	return &results, nil
+}
