@@ -2,6 +2,7 @@
 package postgres
 
 import (
+	"icfs_pg/env"
 	"os"
 
 	_ "github.com/jackc/pgx/stdlib"
@@ -20,7 +21,7 @@ func New(conStr string) (*PGSQL, error) {
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to connect to db")
 	}
-	schemaBytes, err := os.ReadFile(schemaFile)
+	schemaBytes, err := os.ReadFile(getSchemaFile())
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to open schema file")
 	}
@@ -29,6 +30,13 @@ func New(conStr string) (*PGSQL, error) {
 		return nil, errors.Wrap(err, "failed to execute schema")
 	}
 	return &PGSQL{db: dbx}, nil
+}
+
+func getSchemaFile() string {
+	if env.DockerEnabled() {
+		return "./schema.sql"
+	}
+	return schemaFile
 }
 
 func (c *PGSQL) NamedExec(query string, arg interface{}) (int64, error) {

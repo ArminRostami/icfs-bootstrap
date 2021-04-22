@@ -1,18 +1,28 @@
-# Use postgres/example user/password credentials
-version: '3.1'
+version: '3.4'
 
 services:
 
-  db:
+  server:
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    environment: 
+      - DOCKER_ENABLED=1
+    ports:
+      - 8000:8000
+    depends_on: ["pgsql"]
+    
+  pgsql:
     image: postgres
     ports: 
       - "5432:5432"
     restart: always
     environment:
       POSTGRES_PASSWORD: example
-
+    
   adminer:
     image: adminer
     restart: always
     ports:
       - 8080:8080
+    depends_on: ["pgsql"]
