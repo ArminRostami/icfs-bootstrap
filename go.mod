@@ -1,6 +1,6 @@
 module icfs_pg
 
-go 1.15
+go 1.16
 
 require (
 	github.com/cockroachdb/apd v1.1.0 // indirect
@@ -10,6 +10,9 @@ require (
 	github.com/gin-gonic/gin v1.6.3
 	github.com/gofrs/uuid v4.0.0+incompatible // indirect
 	github.com/google/uuid v1.2.0
+	github.com/ipfs/go-ipfs v0.8.0
+	github.com/ipfs/go-ipfs-config v0.12.0
+	github.com/ipfs/interface-go-ipfs-core v0.4.0
 	github.com/jackc/fake v0.0.0-20150926172116-812a484cc733 // indirect
 	github.com/jackc/pgx v3.6.2+incompatible
 	github.com/jmoiron/sqlx v1.3.1
