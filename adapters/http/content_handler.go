@@ -69,21 +69,6 @@ func (h *Handler) ContentUpdateHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"msg": "content updated successfully"})
 }
 
-// FIXME: deprecate this api
-func (h *Handler) SearchHandler(c *gin.Context) {
-	var search map[string]string
-	if err := c.ShouldBindJSON(&search); err != nil {
-		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
-	results, err := h.CS.SearchContent(search)
-	if err != nil {
-		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-	c.JSON(http.StatusOK, results)
-}
-
 func (h *Handler) RateContentHandler(c *gin.Context) {
 	input := struct {
 		Rating float32 `json:"rating"`

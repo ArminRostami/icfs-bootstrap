@@ -10,14 +10,12 @@ import (
 	"github.com/pkg/errors"
 )
 
-// TODO: consider removing searchcontent
 type ContentStore interface {
 	AddContent(c *domain.Content) error
 	DeleteContent(id string) error
 	GetContent(id string) (*domain.Content, error)
 	AddDownload(uid, id string) error
 	UpdateContent(id string, updates map[string]interface{}) error
-	SearchContent(keys, values []string) (*[]domain.Content, error)
 	TextSearch(term string) (*[]domain.Content, error)
 	GetAll() (*[]domain.Content, error)
 	IncrementDownloads(id string) error
@@ -138,37 +136,6 @@ func (s *ContentService) UpdateContent(uid string, updates map[string]interface{
 
 func (s *ContentService) RateContent(rating float32, uid, cid string) error {
 	return s.CST.RateContent(rating, uid, cid)
-}
-
-func (s *ContentService) SearchContent(search map[string]string) (*[]domain.Content, error) {
-	validKeys := map[string]struct{}{"name": {}, "description": {}, "filename": {}, "extension": {}}
-	for key := range search {
-		if _, exists := validKeys[key]; !exists {
-			delete(search, key)
-		}
-	}
-
-	results, err := s.CST.SearchContent(getSlicesFromMap(search))
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to search")
-	}
-	for i := range *results {
-		(*results)[i].CID = ""
-	}
-	return results, nil
-}
-
-func getSlicesFromMap(m map[string]string) ([]string, []string) {
-	keys := make([]string, len(m))
-	values := make([]string, len(m))
-
-	count := 0
-	for k, v := range m {
-		keys[count] = k
-		values[count] = v
-		count++
-	}
-	return keys, values
 }
 
 func (s *ContentService) TextSearch(term string) (*[]domain.Content, error) {
