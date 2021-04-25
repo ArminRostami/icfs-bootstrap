@@ -4,6 +4,7 @@ import (
 	"icfs_pg/domain"
 	"net/http"
 	"os"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 )
@@ -47,11 +48,18 @@ func (h *Handler) LoginHandler(c *gin.Context) {
 		renderError(c, err)
 		return
 	}
-	_, debugMode := os.LookupEnv("DEBUG")
-	prodMode := !debugMode
 	c.SetSameSite(http.SameSiteNoneMode)
-	c.SetCookie(JWT, tok, 24*3600, "/", "", prodMode, prodMode)
+	secureMode := isProdMode()
+	c.SetCookie(JWT, tok, 24*3600, "/", "", secureMode, secureMode)
 	c.JSON(http.StatusOK, gin.H{"data": userData})
+}
+
+func isProdMode() bool {
+	val, exists := os.LookupEnv("DEBUG")
+	if !exists {
+		return true
+	}
+	return strings.EqualFold(val, "0")
 }
 
 func (h *Handler) GetUserInfo(c *gin.Context) {

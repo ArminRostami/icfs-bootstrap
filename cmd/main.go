@@ -6,16 +6,13 @@ import (
 	"icfs_pg/adapters/ipfs"
 	db "icfs_pg/adapters/postgres"
 	app "icfs_pg/application"
-	"icfs_pg/env"
 	"log"
 
 	"github.com/pkg/errors"
 )
 
-const conStr = "postgres://postgres:example@127.0.0.1:5432"
-
 func run() error {
-	pgsql, err := db.New(getConStr())
+	pgsql, err := db.New("postgres", "example", "127.0.0.1:5432")
 	if err != nil {
 		return errors.Wrap(err, "failed to create postgresql instance")
 	}
@@ -44,13 +41,6 @@ func initIPFS() (context.CancelFunc, error) {
 		return nil, errors.Wrap(err, "failed to start ipfs service")
 	}
 	return cancel, nil
-}
-
-func getConStr() string {
-	if env.DockerEnabled() {
-		return "postgres://postgres:example@pgsql:5432"
-	}
-	return conStr
 }
 
 func main() {
