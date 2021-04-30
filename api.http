@@ -13,7 +13,7 @@ POST {{base}}/users
 POST {{base}}/users/login
 
 {
-    "username":"mrtester",
+    "username":"armin",
     "password":"asdf"
 }
 
@@ -110,4 +110,8 @@ GET {{base}}/contents/comment?id=25620596-82fa-4816-aa85-306fab3cbe39
 
 ###
 GET {{base}}/contents/user
+Cookie: {{auth.response.headers.Set-Cookie}}
+
+###
+GET {{base}}/ipfs
 Cookie: {{auth.response.headers.Set-Cookie}}

@@ -4,8 +4,9 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"io/ioutil"
+	"log"
 	"net"
+	"os"
 	"path"
 	"path/filepath"
 
@@ -35,11 +36,18 @@ func NewService() (context.CancelFunc, *IpfsService, error) {
 		return nil, nil, errors.Wrap(err, "failed to setup plugins")
 	}
 	ctx, cancel := context.WithCancel(context.Background())
-	return cancel, &IpfsService{ctx: ctx, repoPath: pr}, nil
+
+	service := &IpfsService{ctx: ctx, repoPath: pr}
+	err = service.start()
+	if err != nil {
+		return cancel, nil, errors.Wrap(err, "failed to start service")
+	}
+
+	return cancel, service, nil
 }
 
-func (s *IpfsService) Start() error {
-	err := s.SetupRepo()
+func (s *IpfsService) start() error {
+	err := s.setupRepo()
 	if err != nil {
 		return errors.Wrap(err, "failed to start ipfs service")
 	}
@@ -77,46 +85,31 @@ func createNode(ctx context.Context, repoPath string) (icore.CoreAPI, error) {
 	return coreapi.NewCoreAPI(node)
 }
 
-func (s *IpfsService) RepoExists() bool {
-	return fsrepo.IsInitialized(s.repoPath)
-}
-
-func (s *IpfsService) SetupRepo() error {
-	if s.RepoExists() {
+func (s *IpfsService) setupRepo() error {
+	if fsrepo.IsInitialized(s.repoPath) {
+		cfg, err := fsrepo.ConfigAt(s.repoPath)
+		if err != nil {
+			return errors.Wrap(err, "failed to open config file")
+		}
+		log.Println(cfg.Bootstrap)
 		return nil
 	}
 
-	fmt.Printf("setting up new repo at %s\n", s.repoPath)
-
+	log.Printf("setting up new repo at %s\n", s.repoPath)
 	cfg, err := config.Init(io.Discard, 2048)
 	if err != nil {
 		return errors.Wrap(err, "failed to init config")
 	}
 
-	conn, err := net.Dial("udp", "8.8.8.8:80")
-	if err != nil {
-		return err
+	if err = setBootstrap(cfg); err != nil {
+		return errors.Wrap(err, "failed to set bootstrap")
 	}
-	ip, ok := conn.LocalAddr().(*net.UDPAddr)
-	if !ok {
-		return errors.Wrap(err, "failed to get ip")
-	}
-
-	bootStr := GetBootstrapString(ip.IP.String(), cfg.Identity.PeerID)
-	fmt.Println(bootStr)
-
-	peers, err := config.ParseBootstrapPeers([]string{bootStr})
-	if err != nil {
-		return errors.Wrap(err, "failed to parse peerAddr")
-	}
-
-	cfg.SetBootstrapPeers(peers)
 
 	if err = fsrepo.Init(s.repoPath, cfg); err != nil {
 		return errors.Wrap(err, "failed to init repo")
 	}
 
-	err = writeKey(swKey, path.Join(s.repoPath, "swarm.key"))
+	err = writeSwarmKey(swKey, s.repoPath)
 	if err != nil {
 		return errors.Wrap(err, "failed to copy swarm.key file")
 	}
@@ -124,12 +117,53 @@ func (s *IpfsService) SetupRepo() error {
 	return nil
 }
 
-func GetBootstrapString(ip, id string) string {
+func setBootstrap(cfg *config.Config) error {
+	ip, err := getOutboundIP()
+	if err != nil {
+		return errors.Wrap(err, "failed to get ip")
+	}
+
+	bootStr := getBootstrapString(ip, cfg.Identity.PeerID)
+	log.Println(bootStr)
+
+	peers, err := config.ParseBootstrapPeers([]string{bootStr})
+	if err != nil {
+		return errors.Wrap(err, "failed to parse peerAddr")
+	}
+
+	cfg.SetBootstrapPeers(peers)
+	return nil
+}
+
+func getOutboundIP() (string, error) {
+	conn, err := net.Dial("udp", "8.8.8.8:80")
+	if err != nil {
+		return "", errors.Wrap(err, "failed to get ip")
+	}
+	ip, ok := conn.LocalAddr().(*net.UDPAddr)
+	if !ok {
+		return "", errors.Wrap(err, "failed to get ip")
+	}
+	return ip.IP.String(), nil
+}
+
+func (s *IpfsService) GetConInfo() (string, string, error) {
+	cfg, err := fsrepo.ConfigAt(s.repoPath)
+	if err != nil {
+		return "", "", errors.Wrap(err, "failed to read config")
+	}
+	if len(cfg.Bootstrap) < 1 {
+		return "", "", errors.Wrap(err, "no bootstrap info")
+	}
+	return cfg.Bootstrap[0], swKey, nil
+}
+
+func getBootstrapString(ip, id string) string {
 	return fmt.Sprintf("/ip4/%s/tcp/4001/ipfs/%s", ip, id)
 }
 
-func writeKey(key, dst string) error {
-	if err := ioutil.WriteFile(dst, []byte(key), 0644); err != nil {
+func writeSwarmKey(key, repoPath string) error {
+	if err := os.WriteFile(path.Join(repoPath, "swarm.key"), []byte(key), 0644); err != nil {
 		return errors.Wrap(err, "failed to write to file")
 	}
 	return nil
