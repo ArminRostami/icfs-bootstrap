@@ -22,8 +22,21 @@ CREATE TABLE IF NOT EXISTS ftypes(
 	file_type varchar(15) UNIQUE NOT NULL
 );
 
--- INSERT INTO ftypes(file_type) VALUES ('font'),('text'),('image'),('audio'),('video'),
--- ('spreadsheet'),('presentation'),('document'),('archive'),('application');
+CREATE OR REPLACE FUNCTION create_types() RETURNS void AS $$
+declare 
+	type_count int;
+begin
+	select count(*) into type_count from ftypes;
+	if type_count < 10 THEN
+	INSERT INTO ftypes(file_type) VALUES ('font'),('text'),('image'),('audio'),('video'),
+	('spreadsheet'),('presentation'),('document'),('archive'),('application');
+	raise notice 'file types created.';
+	end if;
+end
+$$ LANGUAGE plpgsql;
+
+SELECT create_types();
+
 
 CREATE TABLE IF NOT EXISTS contents(
 	id UUID PRIMARY KEY,
