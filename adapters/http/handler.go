@@ -21,7 +21,7 @@ type Handler struct {
 func (h *Handler) Serve() error {
 	h.ge = gin.Default()
 	h.ge.Use(cors.New(cors.Config{
-		AllowOrigins:     []string{"http://127.0.0.1:4200", "http://127.0.0.1:5200"},
+		AllowOrigins:     []string{"http://127.0.0.1:4200", "http://localhost:4200"},
 		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "HEAD", "OPTIONS"},
 		AllowHeaders:     []string{"Set-Cookie", "Origin", "Content-Length", "Content-Type"},
 		AllowCredentials: true,

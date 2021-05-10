@@ -13,7 +13,7 @@ func (h *Handler) NewContentHandler(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	content.UploaderID = c.GetString("id")
+	content.UploaderID = c.GetString(userID)
 	id, appErr := h.CS.RegisterContent(&content)
 	if appErr != nil {
 		renderError(c, appErr)
@@ -24,7 +24,7 @@ func (h *Handler) NewContentHandler(c *gin.Context) {
 
 func (h *Handler) GetContentHandler(c *gin.Context) {
 	id := c.Query("id")
-	uid := c.GetString("id")
+	uid := c.GetString(userID)
 	content, err := h.CS.GetContentWithID(uid, id)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -41,7 +41,7 @@ func (h *Handler) DeleteContentHandler(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	uid := c.GetString("id")
+	uid := c.GetString(userID)
 	err := h.CS.DeleteContent(uid, input.ID)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -52,7 +52,7 @@ func (h *Handler) DeleteContentHandler(c *gin.Context) {
 }
 
 func (h *Handler) ContentUpdateHandler(c *gin.Context) {
-	id := c.GetString(ID)
+	id := c.GetString(userID)
 
 	var updates map[string]interface{}
 	if err := c.ShouldBindJSON(&updates); err != nil {
@@ -78,7 +78,7 @@ func (h *Handler) RateContentHandler(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	uid := c.GetString("id")
+	uid := c.GetString(userID)
 	err := h.CS.RateContent(input.Rating, uid, input.CID)
 	if err != nil {
 		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
@@ -114,7 +114,7 @@ func (h *Handler) GetAllContentsHandler(c *gin.Context) {
 }
 
 func (h *Handler) GetUserContentsHandler(c *gin.Context) {
-	uid := c.GetString(ID)
+	uid := c.GetString(userID)
 	results, err := h.CS.GetUserContents(uid)
 	if err != nil {
 		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
@@ -125,7 +125,7 @@ func (h *Handler) GetUserContentsHandler(c *gin.Context) {
 }
 
 func (h *Handler) CommentHandler(c *gin.Context) {
-	uid := c.GetString(ID)
+	uid := c.GetString(userID)
 
 	input := struct {
 		ID      string `json:"id"`

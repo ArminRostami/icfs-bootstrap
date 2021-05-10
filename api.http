@@ -13,7 +13,7 @@ POST {{base}}/users
 POST {{base}}/users/login
 
 {
-    "username":"armin",
+    "username":"mrtester",
     "password":"asdf"
 }
 
@@ -114,4 +114,8 @@ Cookie: {{auth.response.headers.Set-Cookie}}
 
 ###
 GET {{base}}/ipfs
+Cookie: {{auth.response.headers.Set-Cookie}}
+
+###
+POST {{base}}/users/logout
 Cookie: {{auth.response.headers.Set-Cookie}}

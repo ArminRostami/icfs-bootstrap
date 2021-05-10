@@ -7,7 +7,6 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/dgrijalva/jwt-go"
 	"github.com/google/uuid"
 	"github.com/pkg/errors"
 	"golang.org/x/crypto/bcrypt"
@@ -24,13 +23,15 @@ type UserStore interface {
 	ModifyCredit(uid string, value int) error
 }
 
-type UserService struct {
-	UST UserStore
+type SessionStore interface {
+	Get(key string) (string, error)
+	SetEx(key, value string, expiration int64) error
+	Del(key string) error
 }
 
-type CustomClaims struct {
-	ID string `json:"id"`
-	jwt.StandardClaims
+type UserService struct {
+	UST UserStore
+	SST SessionStore
 }
 
 func (s *UserService) RegisterUser(user *domain.User) (string, *Error) {
@@ -59,31 +60,19 @@ func (s *UserService) AuthenticateUser(username, password string) (*domain.User,
 	if match := checkPassword(password, user.Password); !match {
 		return nil, "", &Error{http.StatusUnauthorized, errors.New("auth failed")}
 	}
-	claims := CustomClaims{ID: user.ID}
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	tokenStr, err := token.SignedString([]byte(SigningKey))
+
+	sessID := uuid.New().String()
+	err = s.SST.SetEx(sessID, user.ID, 24*3600)
 	if err != nil {
-		return nil, "", &Error{http.StatusInternalServerError, errors.Wrap(err, "failed to sign jwt")}
+		return nil, "", &Error{http.StatusInternalServerError, errors.Wrap(err, "failed to set sessID")}
 	}
+
 	user.Password = ""
-	return user, tokenStr, nil
+	return user, sessID, nil
 }
 
-func (s *UserService) ValidateAuth(tokenString string) (*CustomClaims, error) {
-	claims := &CustomClaims{}
-	token, err := jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (interface{}, error) {
-		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-			return nil, errors.Errorf("unexpected signing method: %v", token.Header["alg"])
-		}
-		return []byte(SigningKey), nil
-	})
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to parse token")
-	}
-	if !token.Valid {
-		return nil, errors.New("invalid token")
-	}
-	return claims, nil
+func (s *UserService) ValidateAuth(sessID string) (string, error) {
+	return s.SST.Get(sessID)
 }
 
 func (s *UserService) GetUserWithID(id string) (*domain.User, error) {
@@ -93,6 +82,10 @@ func (s *UserService) GetUserWithID(id string) (*domain.User, error) {
 	}
 	u.Password = ""
 	return u, nil
+}
+
+func (s *UserService) Logout(sessID string) error {
+	return s.SST.Del(sessID)
 }
 
 func (s *UserService) DeleteUser(id string) error {

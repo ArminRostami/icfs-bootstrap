@@ -9,8 +9,10 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-const JWT = "jwt"
-const ID = "id"
+const (
+	sessionToken = "session_token"
+	userID       = "uid"
+)
 
 func (h *Handler) RegisterHandler(c *gin.Context) {
 	var user domain.User
@@ -27,7 +29,7 @@ func (h *Handler) RegisterHandler(c *gin.Context) {
 }
 
 func (h *Handler) DeleteUserHandler(c *gin.Context) {
-	id := c.GetString("id")
+	id := c.GetString(userID)
 
 	err := h.US.DeleteUser(id)
 	if err != nil {
@@ -43,14 +45,14 @@ func (h *Handler) LoginHandler(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	userData, tok, err := h.US.AuthenticateUser(user.Username, user.Password)
+	userData, sessID, err := h.US.AuthenticateUser(user.Username, user.Password)
 	if err != nil {
 		renderError(c, err)
 		return
 	}
 	c.SetSameSite(http.SameSiteNoneMode)
 	secureMode := isProdMode()
-	c.SetCookie(JWT, tok, 24*3600, "/", "", secureMode, secureMode)
+	c.SetCookie(sessionToken, sessID, 24*3600, "/", "", secureMode, secureMode)
 	c.JSON(http.StatusOK, gin.H{"data": userData})
 }
 
@@ -63,7 +65,7 @@ func isProdMode() bool {
 }
 
 func (h *Handler) GetUserInfo(c *gin.Context) {
-	id := c.GetString("id")
+	id := c.GetString(userID)
 	u, err := h.US.GetUserWithID(id)
 	if err != nil {
 		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -72,24 +74,25 @@ func (h *Handler) GetUserInfo(c *gin.Context) {
 	c.JSON(http.StatusOK, u)
 }
 
-func (h *Handler) AuthorizeJWT() gin.HandlerFunc {
+func (h *Handler) AuthorizeUser() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		jwt, err := c.Cookie(JWT)
+		sessID, err := c.Cookie(sessionToken)
 		if err != nil {
 			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
 			return
 		}
-		claims, err := h.US.ValidateAuth(jwt)
+		uid, err := h.US.ValidateAuth(sessID)
 		if err != nil {
 			c.AbortWithStatus(http.StatusUnauthorized)
 		}
-		c.Set(ID, claims.ID)
+		c.Set(userID, uid)
+		c.Set(sessionToken, sessID)
 		c.Next()
 	}
 }
 
 func (h *Handler) UserUpdateHandler(c *gin.Context) {
-	id := c.GetString(ID)
+	id := c.GetString(userID)
 
 	var updates map[string]interface{}
 	if err := c.ShouldBindJSON(&updates); err != nil {
@@ -104,4 +107,16 @@ func (h *Handler) UserUpdateHandler(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{"msg": "user updated successfully"})
+}
+
+func (h *Handler) LogoutHandler(c *gin.Context) {
+	sessID := c.GetString(sessionToken)
+
+	err := h.US.Logout(sessID)
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"msg": "logout successful"})
 }
