@@ -11,13 +11,18 @@ import (
 	"github.com/pkg/errors"
 )
 
+const localhost = "127.0.0.1"
+
 func run() error {
-	pgsql, err := db.New("postgres", "example", "127.0.0.1:5432")
+	pgsql, err := db.New(localhost, 5432, "postgres", "example")
 	if err != nil {
 		return errors.Wrap(err, "failed to create postgresql instance")
 	}
 
-	rds := redis.New("localhost:6379", "")
+	rds, err := redis.New(localhost, 6379, "")
+	if err != nil {
+		return errors.Wrap(err, "failed to create reidis instance")
+	}
 
 	cancel, service, err := ipfs.NewService()
 	defer cancel()

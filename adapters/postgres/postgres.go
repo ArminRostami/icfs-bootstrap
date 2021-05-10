@@ -3,8 +3,8 @@ package postgres
 
 import (
 	"fmt"
+	"icfs_pg/env"
 	"os"
-	"strings"
 
 	_ "github.com/jackc/pgx/stdlib"
 	"github.com/jmoiron/sqlx"
@@ -15,8 +15,8 @@ type PGSQL struct {
 	db *sqlx.DB
 }
 
-func New(user, password, host string) (*PGSQL, error) {
-	dbx, err := sqlx.Connect("pgx", getConStr(user, password, host))
+func New(host string, port int, user, password string) (*PGSQL, error) {
+	dbx, err := sqlx.Connect("pgx", getConStr(host, port, user, password))
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to connect to db")
 	}
@@ -31,29 +31,18 @@ func New(user, password, host string) (*PGSQL, error) {
 	return &PGSQL{db: dbx}, nil
 }
 
-func getConStr(user, password, host string) string {
-	if dockerEnabled() {
-		host = "pgsql:5432"
+func getConStr(host string, port int, user, password string) string {
+	if env.DockerEnabled() {
+		host = "pgsql"
 	}
-	return fmt.Sprintf("postgres://%s:%s@%s", user, password, host)
+	return fmt.Sprintf("postgres://%s:%s@%s:%d", user, password, host, port)
 }
 
 func getSchemaFile(fileAddr string) string {
-	if dockerEnabled() {
+	if env.DockerEnabled() {
 		return "./schema.sql"
 	}
 	return fileAddr
-}
-
-func dockerEnabled() bool {
-	val, exists := os.LookupEnv("DOCKER_ENABLED")
-	if !exists {
-		return false
-	}
-	if strings.EqualFold(val, "1") {
-		return true
-	}
-	return false
 }
 
 func (c *PGSQL) NamedExec(query string, arg interface{}) (int64, error) {
