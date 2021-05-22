@@ -3,8 +3,6 @@ package http
 import (
 	"icfs_pg/domain"
 	"net/http"
-	"os"
-	"strings"
 
 	"github.com/gin-gonic/gin"
 )
@@ -51,17 +49,8 @@ func (h *Handler) LoginHandler(c *gin.Context) {
 		return
 	}
 	c.SetSameSite(http.SameSiteNoneMode)
-	secureMode := isProdMode()
-	c.SetCookie(sessionToken, sessID, 24*3600, "/", "", secureMode, secureMode)
+	c.SetCookie(sessionToken, sessID, 24*3600, "/", "", true, false)
 	c.JSON(http.StatusOK, gin.H{"data": userData})
-}
-
-func isProdMode() bool {
-	val, exists := os.LookupEnv("DEBUG")
-	if !exists {
-		return true
-	}
-	return strings.EqualFold(val, "0")
 }
 
 func (h *Handler) GetUserInfo(c *gin.Context) {

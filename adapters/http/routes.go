@@ -25,6 +25,5 @@ func (h *Handler) SetupRoutes() {
 	h.ge.GET(contentsAPI+"/all", h.GetAllContentsHandler)
 	h.ge.GET(contentsAPI+"/user", h.AuthorizeUser(), h.GetUserContentsHandler)
 	h.ge.POST(contentsAPI+"/search", h.TextSearchHandler)
-	// TODO: decide if this needs Auth
 	h.ge.GET(ipfsAPI, h.IPFSinfoHandler)
 }

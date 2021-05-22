@@ -30,11 +30,11 @@ func run() error {
 		return errors.Wrap(err, "failed to create ipfs service")
 	}
 
-	userStore := &db.UserStore{DB: pgsql}
-	contentStore := &db.ContentStore{DB: pgsql}
+	us := &db.UserStore{DB: pgsql}
+	cs := &db.ContentStore{DB: pgsql}
 
-	contentService := &app.ContentService{CST: contentStore, UST: userStore}
-	userService := &app.UserService{UST: userStore, SST: rds}
+	contentService := &app.ContentService{ContentStore: cs, UserStore: us, ContextProvider: pgsql}
+	userService := &app.UserService{UserStore: us, SessionStore: rds, ContextProvider: pgsql}
 
 	handler := http.Handler{US: userService, CS: contentService, IS: service}
 

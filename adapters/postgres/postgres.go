@@ -2,6 +2,8 @@
 package postgres
 
 import (
+	"context"
+	"database/sql"
 	"fmt"
 	"icfs_pg/env"
 	"os"
@@ -31,6 +33,28 @@ func New(host string, port int, user, password string) (*PGSQL, error) {
 	return &PGSQL{db: dbx}, nil
 }
 
+func txFromCtx(ctx context.Context) (*sqlx.Tx, error) {
+	tx, ok := ctx.Value(txKey).(*sqlx.Tx)
+	if !ok {
+		return nil, errors.New("ctx does not include tx")
+	}
+	return tx, nil
+}
+
+func (pg *PGSQL) CtxWithTx() (context.Context, context.CancelFunc) {
+	ctx, cancel := context.WithCancel(context.Background())
+	tx := pg.db.MustBeginTx(ctx, &sql.TxOptions{})
+	return context.WithValue(ctx, txKey, tx), cancel
+}
+
+func (pg *PGSQL) TxCommit(ctx context.Context) error {
+	tx, err := txFromCtx(ctx)
+	if err != nil {
+		return errors.Wrap(err, "failed to get tx from ctx")
+	}
+	return tx.Commit()
+}
+
 func getConStr(host string, port int, user, password string) string {
 	if env.DockerEnabled() {
 		host = "pgsql"
@@ -45,8 +69,8 @@ func getSchemaFile(fileAddr string) string {
 	return fileAddr
 }
 
-func (c *PGSQL) NamedExec(query string, arg interface{}) (int64, error) {
-	res, err := c.db.NamedExec(query, arg)
+func NamedExec(tx *sqlx.Tx, query string, arg interface{}) (int64, error) {
+	res, err := tx.NamedExec(query, arg)
 	if err != nil {
 		return -1, errors.Wrap(err, "failed to execute named query")
 	}
@@ -57,8 +81,8 @@ func (c *PGSQL) NamedExec(query string, arg interface{}) (int64, error) {
 	return rows, nil
 }
 
-func (c *PGSQL) Exec(query string, args ...interface{}) (int64, error) {
-	res, err := c.db.Exec(query, args...)
+func Exec(tx *sqlx.Tx, query string, args ...interface{}) (int64, error) {
+	res, err := tx.Exec(query, args...)
 	if err != nil {
 		return -1, errors.Wrap(err, "failed to execute query")
 	}

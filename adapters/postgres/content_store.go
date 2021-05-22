@@ -1,6 +1,7 @@
 package postgres
 
 import (
+	"context"
 	"fmt"
 	"icfs_pg/domain"
 	"time"
@@ -12,8 +13,17 @@ type ContentStore struct {
 	DB *PGSQL
 }
 
-func (cs *ContentStore) AddContent(c *domain.Content) error {
-	rows, err := cs.DB.NamedExec(`
+type ctxkey int
+
+var txKey ctxkey = 0
+
+func (cs *ContentStore) AddContent(ctx context.Context, c *domain.Content) error {
+	tx, err := txFromCtx(ctx)
+	if err != nil {
+		return errors.Wrap(err, "failed to get tx from ctx")
+	}
+
+	rows, err := NamedExec(tx, `
 	INSERT INTO contents(id,cid,name,description,extension,type_id,uploader_id,size,downloads) 
 	VALUES(:id,:cid,:name,:description,:extension,(SELECT id from ftypes where file_type=:file_type),:uploader_id,:size,:downloads) `, c)
 	if err != nil {
@@ -25,9 +35,13 @@ func (cs *ContentStore) AddContent(c *domain.Content) error {
 	return nil
 }
 
-func (cs *ContentStore) GetContent(id string) (*domain.Content, error) {
+func (cs *ContentStore) GetContent(ctx context.Context, id string) (*domain.Content, error) {
+	tx, err := txFromCtx(ctx)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to get tx from ctx")
+	}
 	var c domain.Content
-	err := cs.DB.db.Get(&c, `
+	err = tx.Get(&c, `
 	SELECT c.id, c.cid, c.uploader_id, c.name, c.extension, c.description, 
 	c.size, c.downloads, c.uploaded_at, c.last_modified, c.rating, f.file_type
 	FROM ftypes f left join contents c on f.id = c.type_id 
@@ -38,19 +52,28 @@ func (cs *ContentStore) GetContent(id string) (*domain.Content, error) {
 	return &c, nil
 }
 
-func (cs *ContentStore) AddDownload(uid, id string) error {
-	rows, err := cs.DB.Exec(`INSERT INTO downloads(user_id, content_id) VALUES($1, $2)`, uid, id)
+func (cs *ContentStore) AddDownload(ctx context.Context, uid, id string) error {
+	tx, err := txFromCtx(ctx)
+	if err != nil {
+		return errors.Wrap(err, "failed to get tx from ctx")
+	}
+
+	_, err = Exec(tx, `
+	INSERT INTO downloads(user_id, content_id) VALUES($1, $2) 
+	ON CONFLICT ON CONSTRAINT unique_ratings DO NOTHING`, uid, id)
 	if err != nil {
 		return errors.Wrap(err, "failed to add download")
-	}
-	if rows < 1 {
-		return errors.New("operation complete but no row was affected")
 	}
 	return nil
 }
 
-func (cs *ContentStore) DeleteContent(id string) error {
-	rows, err := cs.DB.Exec(`DELETE FROM contents WHERE id=$1`, id)
+func (cs *ContentStore) DeleteContent(ctx context.Context, id string) error {
+	tx, err := txFromCtx(ctx)
+	if err != nil {
+		return errors.Wrap(err, "failed to get tx from ctx")
+	}
+
+	rows, err := Exec(tx, `DELETE FROM contents WHERE id=$1`, id)
 	if err != nil {
 		return errors.Wrap(err, "failed to delete content")
 	}
@@ -60,10 +83,14 @@ func (cs *ContentStore) DeleteContent(id string) error {
 	return nil
 }
 
-func (cs *ContentStore) UpdateContent(id string, updates map[string]interface{}) error {
+func (cs *ContentStore) UpdateContent(ctx context.Context, id string, updates map[string]interface{}) error {
+	tx, err := txFromCtx(ctx)
+	if err != nil {
+		return errors.Wrap(err, "failed to get tx from ctx")
+	}
 	for key, val := range updates {
 		q := fmt.Sprintf(`UPDATE contents SET %s = $1 WHERE id = $2;`, key)
-		rows, err := cs.DB.Exec(q, val, id)
+		rows, err := Exec(tx, q, val, id)
 		if err != nil {
 			return errors.Wrap(err, "failed to update content")
 		}
@@ -74,8 +101,12 @@ func (cs *ContentStore) UpdateContent(id string, updates map[string]interface{})
 	return nil
 }
 
-func (cs *ContentStore) IncrementDownloads(id string) error {
-	rows, err := cs.DB.Exec(`UPDATE contents SET downloads = downloads + 1 WHERE id=$1`, id)
+func (cs *ContentStore) IncrementDownloads(ctx context.Context, id string) error {
+	tx, err := txFromCtx(ctx)
+	if err != nil {
+		return errors.Wrap(err, "failed to get tx from ctx")
+	}
+	rows, err := Exec(tx, `UPDATE contents SET downloads = downloads + 1 WHERE id=$1`, id)
 	if err != nil {
 		return errors.Wrap(err, "failed to update content")
 	}
@@ -85,8 +116,12 @@ func (cs *ContentStore) IncrementDownloads(id string) error {
 	return nil
 }
 
-func (cs *ContentStore) RateContent(rating float32, uid, cid string) error {
-	rows, err := cs.DB.Exec(`
+func (cs *ContentStore) RateContent(ctx context.Context, rating float32, uid, cid string) error {
+	tx, err := txFromCtx(ctx)
+	if err != nil {
+		return errors.Wrap(err, "failed to get tx from ctx")
+	}
+	rows, err := Exec(tx, `
 	UPDATE downloads set rating=$1
 	where downloads.user_id=$2
 	and downloads.content_id=$3;
@@ -100,7 +135,11 @@ func (cs *ContentStore) RateContent(rating float32, uid, cid string) error {
 	return nil
 }
 
-func (cs *ContentStore) TextSearch(term string) (*[]domain.Content, error) {
+func (cs *ContentStore) TextSearch(ctx context.Context, term string) (*[]domain.Content, error) {
+	tx, err := txFromCtx(ctx)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to get tx from ctx")
+	}
 	var results []domain.Content
 	q := `
 	SELECT c.id, c.uploader_id, c.name, c.extension, c.description, 
@@ -108,29 +147,39 @@ func (cs *ContentStore) TextSearch(term string) (*[]domain.Content, error) {
 	FROM ftypes f left join contents c on f.id = c.type_id, websearch_to_tsquery('english', $1) query
 	WHERE query @@ tsv
 	ORDER BY ts_rank_cd(tsv, query) DESC;`
-	err := cs.DB.db.Select(&results, q, term)
+	err = tx.Select(&results, q, term)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to get results")
 	}
 	return &results, nil
 }
 
-func (cs *ContentStore) GetAll() (*[]domain.Content, error) {
+func (cs *ContentStore) GetAll(ctx context.Context) (*[]domain.Content, error) {
+	tx, err := txFromCtx(ctx)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to get tx from ctx")
+	}
+
 	var results []domain.Content
 	q := `
 	SELECT c.id, c.uploader_id, c.name, c.extension, c.description, c.size, 
 	c.downloads, c.uploaded_at, c.last_modified, c.rating, f.file_type
 	FROM contents c join ftypes f on f.id = c.type_id;
 	`
-	err := cs.DB.db.Select(&results, q)
+	err = tx.Select(&results, q)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to get results")
 	}
 	return &results, nil
 }
 
-func (cs *ContentStore) AddComment(uid, id, comment string) error {
-	rows, err := cs.DB.Exec(`UPDATE downloads SET comment_text=$1,comment_time=$2 
+func (cs *ContentStore) AddComment(ctx context.Context, uid, id, comment string) error {
+	tx, err := txFromCtx(ctx)
+	if err != nil {
+		return errors.Wrap(err, "failed to get tx from ctx")
+	}
+
+	rows, err := Exec(tx, `UPDATE downloads SET comment_text=$1,comment_time=$2 
 	WHERE user_id=$3 and content_id=$4`, comment, time.Now(), uid, id)
 	if err != nil {
 		return errors.Wrap(err, "failed to add comment")
@@ -141,18 +190,28 @@ func (cs *ContentStore) AddComment(uid, id, comment string) error {
 	return nil
 }
 
-func (cs *ContentStore) GetComments(id string) (*[]domain.Comment, error) {
+func (cs *ContentStore) GetComments(ctx context.Context, id string) (*[]domain.Comment, error) {
+	tx, err := txFromCtx(ctx)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to get tx from ctx")
+	}
+
 	var comments []domain.Comment
 	q := `SELECT d.comment_text, d.rating, d.comment_time, u.username
 	FROM (SELECT * from downloads WHERE content_id=$1) d left join users u on d.user_id=u.id;`
-	err := cs.DB.db.Select(&comments, q, id)
+	err = tx.Select(&comments, q, id)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to get comments")
 	}
 	return &comments, nil
 }
 
-func (cs *ContentStore) GetUserContents(uid string) (*[]domain.Content, error) {
+func (cs *ContentStore) GetUserContents(ctx context.Context, uid string) (*[]domain.Content, error) {
+	tx, err := txFromCtx(ctx)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to get tx from ctx")
+	}
+
 	var results []domain.Content
 	q := `
 	SELECT c.id, c.uploader_id, c.name, c.extension, c.description, c.size, 
@@ -160,7 +219,7 @@ func (cs *ContentStore) GetUserContents(uid string) (*[]domain.Content, error) {
 	FROM contents c join ftypes f on f.id = c.type_id
 	WHERE c.uploader_id = $1;
 	`
-	err := cs.DB.db.Select(&results, q, uid)
+	err = tx.Select(&results, q, uid)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to get results")
 	}
