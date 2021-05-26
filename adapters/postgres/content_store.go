@@ -3,7 +3,7 @@ package postgres
 import (
 	"context"
 	"fmt"
-	"icfs_pg/domain"
+	"icfs-boot/domain"
 	"time"
 
 	"github.com/pkg/errors"

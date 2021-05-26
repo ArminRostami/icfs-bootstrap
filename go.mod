@@ -1,4 +1,4 @@
-module icfs_pg
+module icfs-boot
 
 go 1.16
 

@@ -1,11 +1,11 @@
 package main
 
 import (
-	http "icfs_pg/adapters/http"
-	"icfs_pg/adapters/ipfs"
-	db "icfs_pg/adapters/postgres"
-	"icfs_pg/adapters/redis"
-	app "icfs_pg/application"
+	http "icfs-boot/adapters/http"
+	"icfs-boot/adapters/ipfs"
+	db "icfs-boot/adapters/postgres"
+	"icfs-boot/adapters/redis"
+	app "icfs-boot/application"
 	"log"
 
 	"github.com/pkg/errors"

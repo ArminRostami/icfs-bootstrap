@@ -2,8 +2,8 @@
 package http
 
 import (
-	"icfs_pg/adapters/ipfs"
-	app "icfs_pg/application"
+	"icfs-boot/adapters/ipfs"
+	app "icfs-boot/application"
 	"time"
 
 	"github.com/gin-contrib/cors"

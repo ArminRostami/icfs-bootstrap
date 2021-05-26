@@ -5,7 +5,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	"icfs_pg/env"
+	"icfs-boot/env"
 	"os"
 
 	_ "github.com/jackc/pgx/stdlib"

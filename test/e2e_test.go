@@ -10,7 +10,7 @@ import (
 	"os"
 	"testing"
 
-	"icfs_pg/domain"
+	"icfs-boot/domain"
 
 	. "github.com/franela/goblin"
 	"github.com/gin-gonic/gin"
