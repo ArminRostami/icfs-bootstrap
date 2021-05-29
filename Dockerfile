@@ -12,5 +12,6 @@ FROM alpine:latest
 RUN apk --no-cache add ca-certificates
 WORKDIR /app/bin
 COPY --from=builder /app/src/main .
-COPY --from=builder /app/src/adapters/postgres/schema.sql .
+COPY --from=builder /app/src/dist ./dist
+COPY --from=builder /app/src/adapters/postgres/schema.sql /app/adapters/postgres/schema.sql
 CMD ["./main"]

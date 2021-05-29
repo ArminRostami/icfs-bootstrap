@@ -4,6 +4,8 @@ package http
 import (
 	"icfs-boot/adapters/ipfs"
 	app "icfs-boot/application"
+	"path"
+	"path/filepath"
 	"time"
 
 	"github.com/gin-contrib/cors"
@@ -35,4 +37,13 @@ func (h *Handler) Serve() error {
 
 func renderError(c *gin.Context, appErr *app.Error) {
 	c.JSON(appErr.Status, gin.H{"error": appErr.Err.Error()})
+}
+
+func (h *Handler) UIhandler(c *gin.Context) {
+	dir, file := path.Split(c.Request.RequestURI)
+	ext := filepath.Ext(file)
+	if file != "" && ext != "" {
+		c.File("./dist/" + path.Join(dir, file))
+	}
+	c.File("./dist/index.html")
 }

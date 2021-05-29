@@ -22,7 +22,7 @@ func New(host string, port int, user, password string) (*PGSQL, error) {
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to connect to db")
 	}
-	schemaBytes, err := os.ReadFile(getSchemaFile("../adapters/postgres/schema.sql"))
+	schemaBytes, err := os.ReadFile("../adapters/postgres/schema.sql")
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to open schema file")
 	}
@@ -60,13 +60,6 @@ func getConStr(host string, port int, user, password string) string {
 		host = "pgsql"
 	}
 	return fmt.Sprintf("postgres://%s:%s@%s:%d", user, password, host, port)
-}
-
-func getSchemaFile(fileAddr string) string {
-	if env.DockerEnabled() {
-		return "./schema.sql"
-	}
-	return fileAddr
 }
 
 func NamedExec(tx *sqlx.Tx, query string, arg interface{}) (int64, error) {

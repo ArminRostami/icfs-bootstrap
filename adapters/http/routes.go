@@ -26,4 +26,6 @@ func (h *Handler) SetupRoutes() {
 	h.ge.GET(contentsAPI+"/user", h.AuthorizeUser(), h.GetUserContentsHandler)
 	h.ge.POST(contentsAPI+"/search", h.TextSearchHandler)
 	h.ge.GET(ipfsAPI, h.IPFSinfoHandler)
+
+	h.ge.NoRoute(h.UIhandler)
 }
