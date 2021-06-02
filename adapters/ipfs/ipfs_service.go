@@ -3,6 +3,7 @@ package ipfs
 import (
 	"context"
 	"fmt"
+	"icfs-boot/env"
 	"io"
 	"log"
 	"net"
@@ -11,12 +12,12 @@ import (
 	"path/filepath"
 
 	config "github.com/ipfs/go-ipfs-config"
+	"github.com/ipfs/go-ipfs/commands"
 	"github.com/ipfs/go-ipfs/core"
-	"github.com/ipfs/go-ipfs/core/coreapi"
+	"github.com/ipfs/go-ipfs/core/corehttp"
 	"github.com/ipfs/go-ipfs/core/node/libp2p"
 	"github.com/ipfs/go-ipfs/plugin/loader"
 	"github.com/ipfs/go-ipfs/repo/fsrepo"
-	icore "github.com/ipfs/interface-go-ipfs-core"
 
 	"github.com/pkg/errors"
 )
@@ -24,7 +25,7 @@ import (
 type IpfsService struct {
 	repoPath string
 	ctx      context.Context
-	ipfs     icore.CoreAPI
+	node     *core.IpfsNode
 }
 
 func NewService() (context.CancelFunc, *IpfsService, error) {
@@ -37,53 +38,61 @@ func NewService() (context.CancelFunc, *IpfsService, error) {
 	}
 	ctx, cancel := context.WithCancel(context.Background())
 
-	service := &IpfsService{ctx: ctx, repoPath: pr}
-	err = service.start()
-	if err != nil {
-		return cancel, nil, errors.Wrap(err, "failed to start service")
-	}
-
-	return cancel, service, nil
+	return cancel, &IpfsService{ctx: ctx, repoPath: pr}, nil
 }
 
-func (s *IpfsService) start() error {
+func (s *IpfsService) Start() error {
 	err := s.setupRepo()
 	if err != nil {
 		return errors.Wrap(err, "failed to start ipfs service")
 	}
 
-	ipfs, err := createNode(s.ctx, s.repoPath)
+	err = s.createNode()
 	if err != nil {
 		return errors.Wrap(err, "failed to spawn default node")
 	}
-	s.ipfs = ipfs
-	return nil
-}
 
-func createNode(ctx context.Context, repoPath string) (icore.CoreAPI, error) {
-	// Open the repo
-	repo, err := fsrepo.Open(repoPath)
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to open repo")
+	opts := []corehttp.ServeOption{
+		// TODO: remove this in the future
+		corehttp.GatewayOption(false, "/ipfs", "/ipns"),
+		corehttp.CommandsOption(s.cmdCtx()),
 	}
 
-	// Construct the node
+	return corehttp.ListenAndServe(s.node, "/ip4/127.0.0.1/tcp/5001", opts...)
+}
+
+func (s *IpfsService) createNode() error {
+	repo, err := fsrepo.Open(s.repoPath)
+	if err != nil {
+		return errors.Wrap(err, "failed to open repo")
+	}
 
 	nodeOptions := &core.BuildCfg{
 		Online:    true,
 		Permanent: true,
-		Routing:   libp2p.DHTOption, // This option sets the node to be a full DHT node (both fetching and storing DHT Records)
-		// Routing: libp2p.DHTClientOption, // This option sets the node to be a client DHT node (only fetching records)
-		Repo: repo,
+		Routing:   libp2p.DHTOption,
+		Repo:      repo,
 	}
 
-	node, err := core.NewNode(ctx, nodeOptions)
+	node, err := core.NewNode(s.ctx, nodeOptions)
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to start new node")
+		return errors.Wrap(err, "failed to start new node")
 	}
+	s.node = node
+	return nil
+}
 
-	// Attach the Core API to the constructed node
-	return coreapi.NewCoreAPI(node)
+func (s *IpfsService) cmdCtx() commands.Context {
+	return commands.Context{
+		ConfigRoot: s.repoPath,
+		LoadConfig: func(path string) (*config.Config, error) {
+			return s.node.Repo.Config()
+		},
+		ConstructNode: func() (*core.IpfsNode, error) {
+			return s.node, nil
+		},
+		ReqLog: &commands.ReqLog{},
+	}
 }
 
 func (s *IpfsService) setupRepo() error {
@@ -137,6 +146,10 @@ func setBootstrap(cfg *config.Config) error {
 }
 
 func getOutboundIP() (string, error) {
+	if env.LocalNetIP != "" {
+		return env.LocalNetIP, nil
+	}
+
 	conn, err := net.Dial("udp", "8.8.8.8:80")
 	if err != nil {
 		return "", errors.Wrap(err, "failed to get ip")
@@ -171,7 +184,6 @@ func writeSwarmKey(key, repoPath string) error {
 }
 
 func setupPlugins(externalPluginsPath string) error {
-	// Load any external plugins if available on externalPluginsPath
 	plugins, err := loader.NewPluginLoader(filepath.Join(externalPluginsPath, "plugins"))
 	if err != nil {
 		return errors.Wrap(err, "failed to load plugins")

@@ -14,3 +14,7 @@ func (h *Handler) IPFSinfoHandler(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, gin.H{"swarm_key": swarmKey, "bootstrap": bootstrap})
 }
+
+func (h *Handler) ICFSServer(c *gin.Context) {
+	c.File("./dist/icfs")
+}

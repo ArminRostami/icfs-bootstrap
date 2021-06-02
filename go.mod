@@ -12,7 +12,6 @@ require (
 	github.com/google/uuid v1.2.0
 	github.com/ipfs/go-ipfs v0.8.0
 	github.com/ipfs/go-ipfs-config v0.12.0
-	github.com/ipfs/interface-go-ipfs-core v0.4.0
 	github.com/jackc/fake v0.0.0-20150926172116-812a484cc733 // indirect
 	github.com/jackc/pgx v3.6.2+incompatible
 	github.com/jmoiron/sqlx v1.3.1

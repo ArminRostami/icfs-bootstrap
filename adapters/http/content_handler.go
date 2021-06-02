@@ -2,6 +2,7 @@ package http
 
 import (
 	"icfs-boot/domain"
+	"log"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -30,6 +31,7 @@ func (h *Handler) GetContentHandler(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
+	log.Println(content)
 	c.JSON(http.StatusOK, gin.H{"content": content})
 }
 

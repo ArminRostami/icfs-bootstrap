@@ -22,7 +22,7 @@ func New(host string, port int, user, password string) (*PGSQL, error) {
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to connect to db")
 	}
-	schemaBytes, err := os.ReadFile("../adapters/postgres/schema.sql")
+	schemaBytes, err := os.ReadFile("./adapters/postgres/schema.sql")
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to open schema file")
 	}

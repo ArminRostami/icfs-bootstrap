@@ -44,6 +44,7 @@ func (h *Handler) UIhandler(c *gin.Context) {
 	ext := filepath.Ext(file)
 	if file != "" && ext != "" {
 		c.File("./dist/" + path.Join(dir, file))
+		return
 	}
 	c.File("./dist/index.html")
 }

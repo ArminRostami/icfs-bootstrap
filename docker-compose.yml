@@ -1,17 +1,17 @@
 version: "3.4"
 
 services:
-  bootstrap:
-    build:
-      context: .
-      dockerfile: ./Dockerfile
-    environment:
-      - DOCKER_ENABLED=1
-      - DEBUG=1
-    ports:
-      - 8000:8000
-    restart: on-failure
-    depends_on: ["pgsql", "datastore"]
+  # bootstrap:
+  #   build:
+  #     context: .
+  #     dockerfile: ./Dockerfile
+  #   environment:
+  #     - DOCKER_ENABLED=1
+  #     - DEBUG=1
+  #   ports:
+  #     - 8000:8000
+  #   restart: unless-stopped
+  #   depends_on: ["pgsql", "datastore"]
 
   pgsql:
     image: postgres

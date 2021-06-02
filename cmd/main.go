@@ -27,8 +27,9 @@ func run() error {
 	cancel, service, err := ipfs.NewService()
 	defer cancel()
 	if err != nil {
-		return errors.Wrap(err, "failed to create ipfs service")
+		return errors.Wrap(err, "failed to run ipfs service")
 	}
+	go service.Start()
 
 	us := &db.UserStore{DB: pgsql}
 	cs := &db.ContentStore{DB: pgsql}

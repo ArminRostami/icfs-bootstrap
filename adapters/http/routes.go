@@ -3,6 +3,7 @@ package http
 const usersAPI = "/users"
 const contentsAPI = "/contents"
 const ipfsAPI = "/ipfs"
+const icfsAPI = "/icfs"
 
 func (h *Handler) SetupRoutes() {
 	h.ge.POST(usersAPI, h.RegisterHandler)
@@ -26,6 +27,8 @@ func (h *Handler) SetupRoutes() {
 	h.ge.GET(contentsAPI+"/user", h.AuthorizeUser(), h.GetUserContentsHandler)
 	h.ge.POST(contentsAPI+"/search", h.TextSearchHandler)
 	h.ge.GET(ipfsAPI, h.IPFSinfoHandler)
+
+	h.ge.GET(icfsAPI, h.ICFSServer)
 
 	h.ge.NoRoute(h.UIhandler)
 }
