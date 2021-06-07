@@ -3,7 +3,7 @@
 POST {{base}}/users
 
 {
-    "username":"armin",
+    "username":"mrtester",
     "password":"asdf",
     "email":"rostamiarmin@gmail.com"
 }
@@ -59,12 +59,9 @@ Cookie: {{auth.response.headers.Set-Cookie}}
 
 
 ###
-DELETE {{base}}/contents
+DELETE {{base}}/contents?id={{addContent.response.body.id}}
 Cookie: {{auth.response.headers.Set-Cookie}}
 
-{
-        "id":"{{addContent.response.body.id}}"
-}
 
 ###
 PUT {{base}}/contents
@@ -109,7 +106,10 @@ Cookie: {{auth.response.headers.Set-Cookie}}
 GET {{base}}/contents/comment?id=25620596-82fa-4816-aa85-306fab3cbe39
 
 ###
-GET {{base}}/contents/user
+GET {{base}}/contents/uploads
+Cookie: {{auth.response.headers.Set-Cookie}}
+###
+GET {{base}}/contents/downloads
 Cookie: {{auth.response.headers.Set-Cookie}}
 
 ###

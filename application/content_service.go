@@ -23,7 +23,8 @@ type ContentStore interface {
 	RateContent(ctx context.Context, rating float32, uid, cid string) error
 	AddComment(ctx context.Context, uid, id, comment string) error
 	GetComments(ctx context.Context, id string) (*[]domain.Comment, error)
-	GetUserContents(ctx context.Context, uid string) (*[]domain.Content, error)
+	GetUserUploads(ctx context.Context, uid string) (*[]domain.Content, error)
+	GetUserDownloads(ctx context.Context, uid string) (*[]domain.Content, error)
 }
 
 type ContentService struct {
@@ -257,11 +258,26 @@ func (s *ContentService) GetComments(id string) (*[]domain.Comment, error) {
 	return comments, nil
 }
 
-func (s *ContentService) GetUserContents(uid string) (*[]domain.Content, error) {
+func (s *ContentService) GetUserUploads(uid string) (*[]domain.Content, error) {
 	ctx, cancel := s.CtxWithTx()
 	defer cancel()
 
-	contents, err := s.ContentStore.GetUserContents(ctx, uid)
+	contents, err := s.ContentStore.GetUserUploads(ctx, uid)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to get user contents")
+	}
+
+	if err = s.TxCommit(ctx); err != nil {
+		return nil, errors.Wrap(err, "failed to commit tx")
+	}
+	return contents, nil
+}
+
+func (s *ContentService) GetUserDownloads(uid string) (*[]domain.Content, error) {
+	ctx, cancel := s.CtxWithTx()
+	defer cancel()
+
+	contents, err := s.ContentStore.GetUserDownloads(ctx, uid)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to get user contents")
 	}

@@ -206,7 +206,7 @@ func (cs *ContentStore) GetComments(ctx context.Context, id string) (*[]domain.C
 	return &comments, nil
 }
 
-func (cs *ContentStore) GetUserContents(ctx context.Context, uid string) (*[]domain.Content, error) {
+func (cs *ContentStore) GetUserUploads(ctx context.Context, uid string) (*[]domain.Content, error) {
 	tx, err := txFromCtx(ctx)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to get tx from ctx")
@@ -214,11 +214,31 @@ func (cs *ContentStore) GetUserContents(ctx context.Context, uid string) (*[]dom
 
 	var results []domain.Content
 	q := `
-	SELECT c.id, c.uploader_id, c.name, c.extension, c.description, c.size, 
+	SELECT c.id, c.cid, c.uploader_id, c.name, c.extension, c.description, c.size, 
 	c.downloads, c.uploaded_at, c.last_modified, c.rating, f.file_type
 	FROM contents c join ftypes f on f.id = c.type_id
 	WHERE c.uploader_id = $1;
 	`
+	err = tx.Select(&results, q, uid)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to get results")
+	}
+	return &results, nil
+}
+
+func (cs *ContentStore) GetUserDownloads(ctx context.Context, uid string) (*[]domain.Content, error) {
+	tx, err := txFromCtx(ctx)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to get tx from ctx")
+	}
+
+	var results []domain.Content
+
+	q := `SELECT c.id, c.cid, c.uploader_id, c.name, c.extension, c.description, 
+	c.size, c.downloads, c.rating, c.uploaded_at, c.last_modified, f.file_type
+	FROM (select content_id from downloads where user_id = $1) as d 
+	left join contents c on d.content_id = c.id left join ftypes f on c.type_id = f.id`
+
 	err = tx.Select(&results, q, uid)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to get results")

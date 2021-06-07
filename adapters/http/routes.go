@@ -24,7 +24,8 @@ func (h *Handler) SetupRoutes() {
 	h.ge.GET(contentsAPI+"/comment", h.GetCommentsHandler)
 
 	h.ge.GET(contentsAPI+"/all", h.GetAllContentsHandler)
-	h.ge.GET(contentsAPI+"/user", h.AuthorizeUser(), h.GetUserContentsHandler)
+	h.ge.GET(contentsAPI+"/uploads", h.AuthorizeUser(), h.GetUserUploadsHandler)
+	h.ge.GET(contentsAPI+"/downloads", h.AuthorizeUser(), h.GetUserDownloadsHandler)
 	h.ge.POST(contentsAPI+"/search", h.TextSearchHandler)
 	h.ge.GET(ipfsAPI, h.IPFSinfoHandler)
 
