@@ -82,25 +82,17 @@ POST {{base}}/contents/search
 }
 
 ###
-POST {{base}}/contents/rate
+POST {{base}}/contents/review
 Cookie: {{auth.response.headers.Set-Cookie}}
 
 {
+    "content_id":"{{addContent.response.body.id}}",
     "rating":4.6,
-    "content_id":"{{addContent.response.body.id}}"
+    "comment":"not bad at all"
 }
 
 ###
 GET {{base}}/contents/all
-
-###
-POST {{base}}/contents/comment
-Cookie: {{auth.response.headers.Set-Cookie}}
-
-{
-    "id":"{{addContent.response.body.id}}",
-    "comment":"terrible stuff"
-}
 
 ###
 GET {{base}}/contents/comment?id=25620596-82fa-4816-aa85-306fab3cbe39

@@ -20,8 +20,8 @@ type ContentStore interface {
 	TextSearch(ctx context.Context, term string) (*[]domain.Content, error)
 	GetAll(ctx context.Context) (*[]domain.Content, error)
 	IncrementDownloads(ctx context.Context, id string) error
-	RateContent(ctx context.Context, rating float32, uid, cid string) error
-	AddComment(ctx context.Context, uid, id, comment string) error
+	DeleteDownload(ctx context.Context, uid, id string) error
+	AddReview(ctx context.Context, uid, id, comment string, rating float32) error
 	GetComments(ctx context.Context, id string) (*[]domain.Comment, error)
 	GetUserUploads(ctx context.Context, uid string) (*[]domain.Content, error)
 	GetUserDownloads(ctx context.Context, uid string) (*[]domain.Content, error)
@@ -138,6 +138,21 @@ func (s *ContentService) DeleteContent(uid, id string) error {
 
 	return nil
 }
+func (s *ContentService) DeleteDownload(uid, id string) error {
+	ctx, cancel := s.CtxWithTx()
+	defer cancel()
+
+	err := s.ContentStore.DeleteDownload(ctx, uid, id)
+	if err != nil {
+		return errors.Wrap(err, "failed to delete content")
+	}
+
+	if err = s.TxCommit(ctx); err != nil {
+		return errors.Wrap(err, "failed to commit tx")
+	}
+	return nil
+
+}
 
 // TODO: consider removing update functionality for contents
 func (s *ContentService) UpdateContent(uid string, updates map[string]interface{}) error {
@@ -180,22 +195,6 @@ func (s *ContentService) UpdateContent(uid string, updates map[string]interface{
 
 }
 
-func (s *ContentService) RateContent(rating float32, uid, cid string) error {
-	ctx, cancel := s.CtxWithTx()
-	defer cancel()
-
-	err := s.ContentStore.RateContent(ctx, rating, uid, cid)
-	if err != nil {
-		return errors.Wrapf(err, "failed to rate content")
-	}
-
-	if err = s.TxCommit(ctx); err != nil {
-		return errors.Wrap(err, "failed to commit tx")
-	}
-
-	return nil
-}
-
 func (s *ContentService) TextSearch(term string) (*[]domain.Content, error) {
 	ctx, cancel := s.CtxWithTx()
 	defer cancel()
@@ -227,13 +226,13 @@ func (s *ContentService) GetAll() (*[]domain.Content, error) {
 	return contents, nil
 }
 
-func (s *ContentService) AddComment(uid, id, comment string) error {
+func (s *ContentService) AddReview(uid, cid, comment string, rating float32) error {
 	ctx, cancel := s.CtxWithTx()
 	defer cancel()
 
-	err := s.ContentStore.AddComment(ctx, uid, id, comment)
+	err := s.ContentStore.AddReview(ctx, uid, cid, comment, rating)
 	if err != nil {
-		return errors.Wrap(err, "failed to add comment")
+		return errors.Wrapf(err, "failed to rate content")
 	}
 
 	if err = s.TxCommit(ctx); err != nil {

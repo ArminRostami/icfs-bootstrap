@@ -18,9 +18,9 @@ func (h *Handler) SetupRoutes() {
 	h.ge.GET(contentsAPI, h.AuthorizeUser(), h.GetContentHandler)
 	h.ge.PUT(contentsAPI, h.AuthorizeUser(), h.ContentUpdateHandler)
 	h.ge.DELETE(contentsAPI, h.AuthorizeUser(), h.DeleteContentHandler)
+	h.ge.DELETE(contentsAPI+"/downloads", h.AuthorizeUser(), h.DeleteDownloadHandler)
 
-	h.ge.POST(contentsAPI+"/rate", h.AuthorizeUser(), h.RateContentHandler)
-	h.ge.POST(contentsAPI+"/comment", h.AuthorizeUser(), h.CommentHandler)
+	h.ge.POST(contentsAPI+"/review", h.AuthorizeUser(), h.ReviewContentHandler)
 	h.ge.GET(contentsAPI+"/comment", h.GetCommentsHandler)
 
 	h.ge.GET(contentsAPI+"/all", h.GetAllContentsHandler)

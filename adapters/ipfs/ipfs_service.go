@@ -53,7 +53,6 @@ func (s *IpfsService) Start() error {
 	}
 
 	opts := []corehttp.ServeOption{
-		// TODO: remove this in the future
 		corehttp.GatewayOption(false, "/ipfs", "/ipns"),
 		corehttp.CommandsOption(s.cmdCtx()),
 	}

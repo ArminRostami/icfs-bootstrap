@@ -83,6 +83,22 @@ func (cs *ContentStore) DeleteContent(ctx context.Context, id string) error {
 	return nil
 }
 
+func (cs *ContentStore) DeleteDownload(ctx context.Context, uid, id string) error {
+	tx, err := txFromCtx(ctx)
+	if err != nil {
+		return errors.Wrap(err, "failed to get tx from ctx")
+	}
+
+	rows, err := Exec(tx, `DELETE FROM downloads WHERE content_id=$1 and user_id=$2`, id, uid)
+	if err != nil {
+		return errors.Wrap(err, "failed to delete content")
+	}
+	if rows < 1 {
+		return errors.New("operation complete but no row was affected")
+	}
+	return nil
+}
+
 func (cs *ContentStore) UpdateContent(ctx context.Context, id string, updates map[string]interface{}) error {
 	tx, err := txFromCtx(ctx)
 	if err != nil {
@@ -107,25 +123,6 @@ func (cs *ContentStore) IncrementDownloads(ctx context.Context, id string) error
 		return errors.Wrap(err, "failed to get tx from ctx")
 	}
 	rows, err := Exec(tx, `UPDATE contents SET downloads = downloads + 1 WHERE id=$1`, id)
-	if err != nil {
-		return errors.Wrap(err, "failed to update content")
-	}
-	if rows < 1 {
-		return errors.New("operation complete but no row was affected")
-	}
-	return nil
-}
-
-func (cs *ContentStore) RateContent(ctx context.Context, rating float32, uid, cid string) error {
-	tx, err := txFromCtx(ctx)
-	if err != nil {
-		return errors.Wrap(err, "failed to get tx from ctx")
-	}
-	rows, err := Exec(tx, `
-	UPDATE downloads set rating=$1
-	where downloads.user_id=$2
-	and downloads.content_id=$3;
-	`, rating, uid, cid)
 	if err != nil {
 		return errors.Wrap(err, "failed to update content")
 	}
@@ -173,14 +170,13 @@ func (cs *ContentStore) GetAll(ctx context.Context) (*[]domain.Content, error) {
 	return &results, nil
 }
 
-func (cs *ContentStore) AddComment(ctx context.Context, uid, id, comment string) error {
+func (cs *ContentStore) AddReview(ctx context.Context, uid, id, comment string, rating float32) error {
 	tx, err := txFromCtx(ctx)
 	if err != nil {
 		return errors.Wrap(err, "failed to get tx from ctx")
 	}
-
-	rows, err := Exec(tx, `UPDATE downloads SET comment_text=$1,comment_time=$2 
-	WHERE user_id=$3 and content_id=$4`, comment, time.Now(), uid, id)
+	rows, err := Exec(tx, `UPDATE downloads SET comment_text=$1,comment_time=$2,rating=$3
+	WHERE user_id=$4 and content_id=$5`, comment, time.Now(), rating, uid, id)
 	if err != nil {
 		return errors.Wrap(err, "failed to add comment")
 	}
@@ -188,6 +184,7 @@ func (cs *ContentStore) AddComment(ctx context.Context, uid, id, comment string)
 		return errors.New("operation complete but no row was affected")
 	}
 	return nil
+
 }
 
 func (cs *ContentStore) GetComments(ctx context.Context, id string) (*[]domain.Comment, error) {

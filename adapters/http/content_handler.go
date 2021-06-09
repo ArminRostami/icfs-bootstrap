@@ -46,6 +46,16 @@ func (h *Handler) DeleteContentHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"msg": "content deleted"})
 
 }
+func (h *Handler) DeleteDownloadHandler(c *gin.Context) {
+	content_id := c.Query("id")
+	uid := c.GetString(userID)
+	err := h.CS.DeleteDownload(uid, content_id)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"msg": "content deleted"})
+}
 
 func (h *Handler) ContentUpdateHandler(c *gin.Context) {
 	id := c.GetString(userID)
@@ -65,17 +75,18 @@ func (h *Handler) ContentUpdateHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"msg": "content updated successfully"})
 }
 
-func (h *Handler) RateContentHandler(c *gin.Context) {
+func (h *Handler) ReviewContentHandler(c *gin.Context) {
 	input := struct {
-		Rating float32 `json:"rating"`
-		CID    string  `json:"content_id"`
+		CID     string  `json:"content_id"`
+		Rating  float32 `json:"rating"`
+		Comment string  `json:"comment"`
 	}{}
 	if err := c.ShouldBindJSON(&input); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 	uid := c.GetString(userID)
-	err := h.CS.RateContent(input.Rating, uid, input.CID)
+	err := h.CS.AddReview(uid, input.CID, input.Comment, input.Rating)
 	if err != nil {
 		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -127,26 +138,6 @@ func (h *Handler) GetUserDownloadsHandler(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"results": results})
-}
-
-func (h *Handler) CommentHandler(c *gin.Context) {
-	uid := c.GetString(userID)
-
-	input := struct {
-		ID      string `json:"id"`
-		Comment string `json:"comment"`
-	}{}
-	if err := c.ShouldBindJSON(&input); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
-	err := h.CS.AddComment(uid, input.ID, input.Comment)
-	if err != nil {
-		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-	c.JSON(http.StatusOK, gin.H{"msg": "comment posted successfully"})
-
 }
 
 func (h *Handler) GetCommentsHandler(c *gin.Context) {
